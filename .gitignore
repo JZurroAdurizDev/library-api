@@ -32,6 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
+## Application.properties
+src/main/resources/application.properties
 
 # Local database setup (contains credentials)
 sql/setup_local.sql
