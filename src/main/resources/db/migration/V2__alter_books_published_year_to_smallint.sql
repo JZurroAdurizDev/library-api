@@ -1,0 +1,2 @@
+ALTER TABLE books
+  MODIFY COLUMN published_year SMALLINT NOT NULL;
