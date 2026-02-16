@@ -1,4 +1,4 @@
-package com.jabierzurro.libraryapi.exception;
+package com.jabierzurro.libraryapi.exception.handler;
 
 import java.time.LocalDateTime;
 import lombok.Getter;

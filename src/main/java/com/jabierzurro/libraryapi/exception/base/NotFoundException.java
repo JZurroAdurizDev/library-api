@@ -1,4 +1,4 @@
-package com.jabierzurro.libraryapi.exception;
+package com.jabierzurro.libraryapi.exception.base;
 
 /**
  * Base exception for resources that cannot be found (HTTP 404).

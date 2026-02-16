@@ -1,5 +1,8 @@
-package com.jabierzurro.libraryapi.exception;
+package com.jabierzurro.libraryapi.exception.handler;
 
+import com.jabierzurro.libraryapi.exception.handler.CustomErrorResponse;
+import com.jabierzurro.libraryapi.exception.base.ConflictException;
+import com.jabierzurro.libraryapi.exception.base.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;

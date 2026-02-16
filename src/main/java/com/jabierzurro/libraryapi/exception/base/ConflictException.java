@@ -1,4 +1,4 @@
-package com.jabierzurro.libraryapi.exception;
+package com.jabierzurro.libraryapi.exception.base;
 
 /**
  * Base exception for business conflicts (HTTP 409).
