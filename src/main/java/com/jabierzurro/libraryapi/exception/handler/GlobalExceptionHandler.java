@@ -1,6 +1,5 @@
 package com.jabierzurro.libraryapi.exception.handler;
 
-import com.jabierzurro.libraryapi.exception.handler.CustomErrorResponse;
 import com.jabierzurro.libraryapi.exception.base.ConflictException;
 import com.jabierzurro.libraryapi.exception.base.NotFoundException;
 import org.springframework.http.HttpStatus;
