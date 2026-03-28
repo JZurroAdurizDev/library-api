@@ -19,6 +19,10 @@ This project is being built from scratch with a clean Git history, a database-fi
 - A user can only have one active loan at a time.
 - Books cannot be loaned to multiple users simultaneously.
 
+## Available endpoints
+- GET /health → Returns API status
+- GET / and /info → Returns API metadata (name, version, description, author)
+
 ## Database
 The database schema is managed using **Flyway migrations**.
 
@@ -46,6 +50,9 @@ The application follows a layered architecture:
 - **DTO layer** → Data transfer between API boundaries
 - **Entity layer** → Database representation
 
+## Testing
+Controller tests are implemented using MockMvc to validate HTTP responses and endpoint behavior.
+
 ### Exception handling
 A global exception handling mechanism is implemented using `@ControllerAdvice`.
 
@@ -64,4 +71,5 @@ The application is under active development. Features are added incrementally an
 - Layered architecture (Controller, Service, Repository, DTO).
 - Explicit domain exception modeling.
 - Security handled via Spring Security and JWT.
-- Git flow with `main` and `develop` branches.
+- Git workflow based on `main`, `develop` and feature branches.
+- New features are developed in isolated branches and merged into `develop` through Pull Requests.
