@@ -3,6 +3,7 @@ package com.jabierzurro.libraryapi.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jabierzurro.libraryapi.security.dto.AuthResponseDTO;
 import com.jabierzurro.libraryapi.security.dto.LoginRequestDTO;
+import com.jabierzurro.libraryapi.security.dto.RegisterRequestDTO;
 import com.jabierzurro.libraryapi.security.service.AuthService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
@@ -92,6 +93,44 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.accessToken").value("fake-jwt-token"))
+                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.expiresIn").value(1800000L));
+    }
+
+    /**
+     * Verifies that a valid registration request returns a successful response
+     * containing a JWT token and its metadata.
+     *
+     * @throws Exception if the mock HTTP request fails
+     */
+    @Test
+    @DisplayName("POST /auth/register should return JWT when registration data is valid")
+    void registerShouldReturnJwt() throws Exception {
+
+        // Arrange
+        RegisterRequestDTO request = new RegisterRequestDTO(
+                "12345678A",
+                "Jabier",
+                "Zurro",
+                "jabier@email.com",
+                "password123"
+        );
+
+        AuthResponseDTO response = new AuthResponseDTO(
+                "fake-register-jwt-token",
+                "Bearer",
+                1800000L
+        );
+
+        when(authService.register(request)).thenReturn(response);
+
+        // Act + Assert
+        mockMvc.perform(post("/auth/register")
+                .contentType(APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.accessToken").value("fake-register-jwt-token"))
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.expiresIn").value(1800000L));
     }

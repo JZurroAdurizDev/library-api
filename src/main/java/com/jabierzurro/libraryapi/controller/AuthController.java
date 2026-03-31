@@ -2,6 +2,7 @@ package com.jabierzurro.libraryapi.controller;
 
 import com.jabierzurro.libraryapi.security.dto.AuthResponseDTO;
 import com.jabierzurro.libraryapi.security.dto.LoginRequestDTO;
+import com.jabierzurro.libraryapi.security.dto.RegisterRequestDTO;
 import com.jabierzurro.libraryapi.security.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +45,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginRequestDTO request) {
         return ResponseEntity.ok(this.authService.login(request));
+    }
+    
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDTO> register(@RequestBody @Valid RegisterRequestDTO request) {
+        return ResponseEntity.ok(this.authService.register(request));
     }
 }
