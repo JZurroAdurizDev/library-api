@@ -2,6 +2,7 @@ package com.jabierzurro.libraryapi.controller;
 
 
 import com.jabierzurro.libraryapi.dto.PatchUserRequestDTO;
+import com.jabierzurro.libraryapi.dto.UpdateUserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UserResponseDTO;
 import com.jabierzurro.libraryapi.service.UserService;
@@ -61,7 +62,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Integer id,
-            @Valid @RequestBody UserRequestDTO request
+            @Valid @RequestBody UpdateUserRequestDTO request
     ) {
         return ResponseEntity.ok(userService.update(id, request));
     }
