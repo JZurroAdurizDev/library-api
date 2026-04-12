@@ -28,7 +28,16 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+
+
 /**
+ * Web layer test for {@link UserController}.
+ *
+ * <p>This test verifies the behavior of user-related endpoints in an
+ * isolated MVC context. Dependencies are mocked to focus on request
+ * handling, HTTP responses and JSON structure.
+ *
+ * <p>Security filters are disabled to test only controller logic.
  *
  * @author Jabier Zurro Aduriz
  */
@@ -53,12 +62,15 @@ public class UserControllerTest {
     @Test
     @DisplayName("GET /users should return user list")
     void getAllUsersShouldReturnOk() throws Exception {
+
+        // Arrange
         List<UserResponseDTO> users = List.of(
             new UserResponseDTO(1, "12345678A", "John", "Wick", "jwick@test.com", "ROLE_USER")
         );
 
         when(userService.getAllUsers()).thenReturn(users);
 
+        // Act + Assert
         mockMvc.perform(get("/users"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
@@ -69,28 +81,32 @@ public class UserControllerTest {
     @DisplayName("GET /users/{id} should return user when it exists")
     void getUserByIdShouldReturnOk() throws Exception {
 
+        // Arrange
         UserResponseDTO user = new UserResponseDTO(
             1, "12345678A", "John", "Wick", "jwick@test.com", "ROLE_USER"
         );
 
         when(userService.getUserById(1)).thenReturn(user);
 
+        // Act + Assert
         mockMvc.perform(get("/users/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.dni").value("12345678A"));
     }
-    
+
     @Test
     @DisplayName("GET /users/search should return filtered users")
     void searchUsersShouldReturnOk() throws Exception {
 
+        // Arrange
         List<UserResponseDTO> users = List.of(
             new UserResponseDTO(1, "12345678A", "John", "Wick", "john@test.com", "ROLE_USER")
         );
 
         when(userService.search("John", null, null, null)).thenReturn(users);
 
+        // Act + Assert
         mockMvc.perform(get("/users/search")
                 .param("firstName", "John"))
                 .andExpect(status().isOk())
@@ -103,6 +119,7 @@ public class UserControllerTest {
     @DisplayName("POST /users should create user and return 201")
     void createUserShouldReturnCreated() throws Exception {
 
+        // Arrange
         UserRequestDTO request = new UserRequestDTO(
             "12345678A",
             "John",
@@ -122,6 +139,7 @@ public class UserControllerTest {
 
         when(userService.create(any(UserRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(post("/users")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -129,11 +147,12 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.email").value("john@test.com"));
     }
-    
+
     @Test
     @DisplayName("PUT /users/{id} should update user and return 200")
     void updateUserShouldReturnOk() throws Exception {
 
+        // Arrange
         UpdateUserRequestDTO request = new UpdateUserRequestDTO(
             "12345678A",
             "John",
@@ -152,6 +171,7 @@ public class UserControllerTest {
 
         when(userService.update(any(Integer.class), any(UpdateUserRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(put("/users/1")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -160,11 +180,12 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.dni").value("12345678A"))
                 .andExpect(jsonPath("$.email").value("john@test.com"));
     }
-    
+
     @Test
     @DisplayName("PATCH /users/{id} should partially update user and return 200")
     void patchUserShouldReturnOk() throws Exception {
 
+        // Arrange
         PatchUserRequestDTO request = new PatchUserRequestDTO(
             null,
             "Johnny",
@@ -183,6 +204,7 @@ public class UserControllerTest {
 
         when(userService.patch(any(Integer.class), any(PatchUserRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(patch("/users/1")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -196,6 +218,7 @@ public class UserControllerTest {
     @DisplayName("DELETE /users/{id} should return 204")
     void deleteUserShouldReturnNoContent() throws Exception {
 
+        // Act + Assert
         mockMvc.perform(delete("/users/1"))
                 .andExpect(status().isNoContent());
 
