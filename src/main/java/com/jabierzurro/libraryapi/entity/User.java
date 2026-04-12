@@ -2,7 +2,6 @@ package com.jabierzurro.libraryapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,7 +23,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "users")
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 public class User {
@@ -83,4 +81,13 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
+    
+    public User(String dni, String firstName, String lastName, String email, String passwordHash, Role role) {
+        this.dni = dni;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.passwordHash = passwordHash;
+        this.role = role;
+    }
 }
