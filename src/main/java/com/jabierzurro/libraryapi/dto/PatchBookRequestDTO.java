@@ -1,34 +1,30 @@
 package com.jabierzurro.libraryapi.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ *
+ * @author Jabier Zurro Aduriz
+ */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class BookRequestDTO {
-
-    @NotBlank
+public class PatchBookRequestDTO {
     @Size(max = 200)
     private String title;
 
-    @NotBlank
     @Size(max = 150)
     private String author;
 
-    @NotBlank
     @Size(min = 10, max = 13)
     private String isbn;
 
-    @NotNull
     private Short publishedYear;
-    
-    @NotNull
+
     private Integer pages;
 }

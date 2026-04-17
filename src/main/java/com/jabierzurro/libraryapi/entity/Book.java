@@ -25,7 +25,6 @@ import lombok.Setter;
 @Entity
 @Table(name = "books")
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
@@ -58,4 +57,12 @@ public class Book {
         inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     private Set<Genre> genres = new HashSet<>();
+    
+    public Book(String title, String author, String isbn, Short publishedYear, Integer pages) {
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.publishedYear = publishedYear;
+        this.pages = pages;
+    }
 }
