@@ -14,8 +14,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -27,24 +27,57 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Web layer test class for {@link BookController}.
+ *
+ * <p>This test suite verifies the HTTP contract exposed by the controller,
+ * including request handling, response status codes and JSON response structure.
+ *
+ * <p>The controller is tested in isolation using {@link WebMvcTest}, while
+ * all dependencies are mocked.
+ *
+ * <p>Security filters are disabled to focus exclusively on controller behavior.
+ *
+ * @author Jabier Zurro Aduriz
+ */
 @WebMvcTest(BookController.class)
 @AutoConfigureMockMvc(addFilters = false)
 public class BookControllerTest {
 
+    /**
+     * Mock MVC client used to perform HTTP requests.
+     */
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Object mapper used to serialize request bodies to JSON.
+     */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * Mocked service layer dependency.
+     */
     @MockitoBean
     private BookService bookService;
 
+    /**
+     * Mocked JWT service required for application context initialization.
+     */
     @MockitoBean
     private JwtService jwtService;
 
+    /**
+     * Mocked user details service required for application context initialization.
+     */
     @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
 
+    /**
+     * Verifies that GET /books returns a list of books with HTTP 200 status.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("GET /books should return book list")
     void getAllBooksShouldReturnOk() throws Exception {
@@ -61,6 +94,11 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$[0].bookId").value(1));
     }
 
+    /**
+     * Verifies that GET /books/{id} returns a book when it exists.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("GET /books/{id} should return book when it exists")
     void getBookByIdShouldReturnOk() throws Exception {
@@ -77,6 +115,11 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$.isbn").value("0-7414-9349-7"));
     }
 
+    /**
+     * Verifies that GET /books/search returns filtered results based on query parameters.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("GET /books/search should return filtered books")
     void searchBooksShouldReturnOk() throws Exception {
@@ -95,6 +138,11 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$[0].title").value("Dummy"));
     }
 
+    /**
+     * Verifies that POST /books creates a new book and returns HTTP 201.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("POST /books should create book and return 201")
     void createBookShouldReturnCreated() throws Exception {
@@ -126,6 +174,11 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$.title").value("Dummy"));
     }
 
+    /**
+     * Verifies that PUT /books/{id} fully updates a book and returns HTTP 200.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("PUT /books/{id} should update book and return 200")
     void updateBookShouldReturnOk() throws Exception {
@@ -158,6 +211,11 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$.isbn").value("0-7414-9349-7"));
     }
 
+    /**
+     * Verifies that PATCH /books/{id} partially updates a book and returns HTTP 200.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("PATCH /books/{id} should partially update book and return 200")
     void patchBookShouldReturnOk() throws Exception {
@@ -190,6 +248,13 @@ public class BookControllerTest {
                 .andExpect(jsonPath("$.isbn").value("0-7414-9349-7"));
     }
 
+    /**
+     * Verifies that DELETE /books/{id} removes a book and returns HTTP 204.
+     *
+     * <p>Also verifies that the delete operation is delegated to the service layer.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("DELETE /books/{id} should return 204")
     void deleteBookShouldReturnNoContent() throws Exception {
