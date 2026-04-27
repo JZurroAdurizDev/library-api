@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author Jabier Zurro Aduriz
  */
-@JsonPropertyOrder({"loanId", "userId", "startDate", "dueDate2", "closedAt", "status, books"})
+@JsonPropertyOrder({"loanId", "userId", "startDate", "dueDate", "closedAt", "status", "books"})
 public record LoanResponseDTO(
         Integer loanId,
         Integer userId,
