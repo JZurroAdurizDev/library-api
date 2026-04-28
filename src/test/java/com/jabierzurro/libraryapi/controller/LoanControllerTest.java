@@ -1,7 +1,6 @@
 package com.jabierzurro.libraryapi.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jabierzurro.libraryapi.dto.BookResponseDTO;
 import com.jabierzurro.libraryapi.dto.LoanRequestDTO;
 import com.jabierzurro.libraryapi.dto.LoanResponseDTO;
