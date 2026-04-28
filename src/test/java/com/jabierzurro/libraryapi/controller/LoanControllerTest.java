@@ -7,6 +7,7 @@ import com.jabierzurro.libraryapi.dto.LoanResponseDTO;
 import com.jabierzurro.libraryapi.dto.PatchLoanRequestDTO;
 import com.jabierzurro.libraryapi.dto.UpdateLoanRequestDTO;
 import com.jabierzurro.libraryapi.entity.LoanStatus;
+import com.jabierzurro.libraryapi.security.authorization.LoanSecurity;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import com.jabierzurro.libraryapi.service.LoanService;
@@ -23,6 +24,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -61,6 +63,9 @@ public class LoanControllerTest {
     @MockitoBean
     private LoanService loanService;
     
+    @MockitoBean
+    private LoanSecurity loanSecurity;
+    
     /**
      * Mocked JWT service required for application context initialization.
      */
@@ -86,6 +91,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("GET /loans should return loan list")
     void getAllLoansShouldReturnOk() throws Exception {
 
@@ -127,6 +133,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("GET /loans/{id} should return loan when it exists")
     void getLoanByIdShouldReturnOk() throws Exception {
 
@@ -166,6 +173,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("GET /loans/search should return filtered loans")
     void searchLoansShouldReturnOk() throws Exception {
 
@@ -207,6 +215,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("POST /loans should create loan and return 201")
     void createLoanShouldReturnCreated() throws Exception {
 
@@ -254,6 +263,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PUT /loans/{id} should update loan and return 200")
     void updateLoanShouldReturnOk() throws Exception {
 
@@ -300,6 +310,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PATCH /loans/{id} should partially update loan and return 200")
     void patchLoanShouldReturnOk() throws Exception {
 
@@ -348,6 +359,7 @@ public class LoanControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("DELETE /loans/{id} should return 204")
     void deleteLoanShouldReturnNoContent() throws Exception {
 

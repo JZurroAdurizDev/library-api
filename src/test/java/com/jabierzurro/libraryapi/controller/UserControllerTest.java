@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -60,6 +61,7 @@ public class UserControllerTest {
     private UserDetailsServiceImpl userDetailsService;
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users should return user list")
     void getAllUsersShouldReturnOk() throws Exception {
 
@@ -78,6 +80,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/{id} should return user when it exists")
     void getUserByIdShouldReturnOk() throws Exception {
 
@@ -96,6 +99,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("GET /users/search should return filtered users")
     void searchUsersShouldReturnOk() throws Exception {
 
@@ -116,6 +120,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /users should create user and return 201")
     void createUserShouldReturnCreated() throws Exception {
 
@@ -149,6 +154,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PUT /users/{id} should update user and return 200")
     void updateUserShouldReturnOk() throws Exception {
 
@@ -182,6 +188,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PATCH /users/{id} should partially update user and return 200")
     void patchUserShouldReturnOk() throws Exception {
 
@@ -215,6 +222,7 @@ public class UserControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("DELETE /users/{id} should return 204")
     void deleteUserShouldReturnNoContent() throws Exception {
 
