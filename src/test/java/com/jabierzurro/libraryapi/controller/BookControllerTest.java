@@ -19,6 +19,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import org.springframework.security.test.context.support.WithMockUser;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -36,7 +37,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>The controller is tested in isolation using {@link WebMvcTest}, while
  * all dependencies are mocked.
  *
- * <p>Security filters are disabled to focus exclusively on controller behavior.
+ * <p>Security filters are disabled, while role-based access is simulated
+ * using {@code @WithMockUser}.
  *
  * @author Jabier Zurro Aduriz
  */
@@ -79,6 +81,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("GET /books should return book list")
     void getAllBooksShouldReturnOk() throws Exception {
 
@@ -100,6 +103,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("GET /books/{id} should return book when it exists")
     void getBookByIdShouldReturnOk() throws Exception {
 
@@ -121,6 +125,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "USER")
     @DisplayName("GET /books/search should return filtered books")
     void searchBooksShouldReturnOk() throws Exception {
 
@@ -144,6 +149,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("POST /books should create book and return 201")
     void createBookShouldReturnCreated() throws Exception {
 
@@ -180,6 +186,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PUT /books/{id} should update book and return 200")
     void updateBookShouldReturnOk() throws Exception {
 
@@ -217,6 +224,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("PATCH /books/{id} should partially update book and return 200")
     void patchBookShouldReturnOk() throws Exception {
 
@@ -256,6 +264,7 @@ public class BookControllerTest {
      * @throws Exception if request execution fails
      */
     @Test
+    @WithMockUser(roles = "ADMIN")
     @DisplayName("DELETE /books/{id} should return 204")
     void deleteBookShouldReturnNoContent() throws Exception {
 

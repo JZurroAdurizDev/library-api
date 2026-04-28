@@ -1,19 +1,18 @@
 package com.jabierzurro.libraryapi.security.filter;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.jabierzurro.libraryapi.security.model.UserDetailsImpl;
+import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collection;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
  * <p>If a valid token is found:
  * <ul>
  *     <li>the token is validated,</li>
- *     <li>the username and authorities are extracted,</li>
+ *     <li>the username is extracted,</li>
+ *     <li>the user details are loaded from the persistence layer,</li>
+ *     <li>the authorities are obtained from the loaded user details,</li>
  *     <li>an {@link Authentication} object is created,</li>
  *     <li>the authentication is stored in the {@link SecurityContext}.</li>
  * </ul>
@@ -43,14 +44,20 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserDetailsServiceImpl userDetailsService;
 
     /**
-     * Constructor for injecting the JWT service used to validate and decode tokens.
+     * Constructor for injecting the JWT service and user details service.
      *
      * @param jwtService service responsible for token validation and claim extraction
+     * @param userDetailsService service used to load authenticated user details
      */
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(
+            JwtService jwtService,
+            UserDetailsServiceImpl userDetailsService
+    ) {
         this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
     }
 
     /**
@@ -81,13 +88,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             DecodedJWT decodedJWT = jwtService.validateToken(jwtToken);
             String username = jwtService.extractUsername(decodedJWT);
-            String authorities = jwtService.getSpecificClaim(decodedJWT, "authorities").asString();
 
-            Collection<GrantedAuthority> authoritiesList =
-                    AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
+            UserDetailsImpl userDetails =
+                    (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
 
             Authentication authentication =
-                    new UsernamePasswordAuthenticationToken(username, null, authoritiesList);
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
 
             SecurityContext context = SecurityContextHolder.getContext();
             context.setAuthentication(authentication);

@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,14 +27,20 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
  *     <li>stateless session management,</li>
  *     <li>password encoding,</li>
  *     <li>authentication provider configuration,</li>
- *     <li>JWT filter integration.</li>
+ *     <li>JWT filter integration,</li>
+ *     <li>method-level authorization using {@code @PreAuthorize} annotations.</li>
  * </ul>
  *
  * <p>The application uses JWT-based authentication, so sessions are configured
  * as stateless and the custom {@link JwtAuthFilter} is added before the standard
  * username/password authentication filter.
+ *
+ * <p>Method-level authorization is enabled via {@link EnableMethodSecurity},
+ * allowing fine-grained access control using annotations such as
+ * {@code @PreAuthorize}.
  */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -63,6 +70,9 @@ public class SecurityConfig {
      *     <li>registers the custom authentication provider,</li>
      *     <li>adds the JWT filter before Spring Security's standard authentication filter.</li>
      * </ul>
+     *
+     * <p>Role-based authorization is handled at method level using
+     * {@code @PreAuthorize} annotations.
      *
      * @param http {@link HttpSecurity} object used to configure web-based security
      * @return the configured {@link SecurityFilterChain}
