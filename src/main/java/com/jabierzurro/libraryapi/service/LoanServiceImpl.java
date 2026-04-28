@@ -227,6 +227,10 @@ public class LoanServiceImpl implements LoanService {
         Loan loan = loanRepository.findById(id)
                 .orElseThrow(() -> new LoanNotFoundException(id));
 
+        if (loan.getStatus() == LoanStatus.CLOSED) {
+            throw new ConflictException("Closed loans cannot be modified") {};
+        }
+
         LocalDate newStartDate = request.getStartDate() != null
                 ? request.getStartDate()
                 : loan.getStartDate();
