@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -39,6 +40,7 @@ public class BookController {
      *
      * @return list of books as {@link BookResponseDTO}
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<List<BookResponseDTO>> getAllBooks() {
         return ResponseEntity.ok(bookService.getAllBooks());
@@ -50,6 +52,7 @@ public class BookController {
      * @param id book identifier
      * @return the book as {@link BookResponseDTO}
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<BookResponseDTO> getBookById(@PathVariable Integer id) {
         return ResponseEntity.ok(bookService.getBookById(id));
@@ -67,6 +70,7 @@ public class BookController {
      * @param isbn optional ISBN filter
      * @return list of matching books as {@link BookResponseDTO}
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<BookResponseDTO>> searchBooks(
             @RequestParam(required = false) String title,
@@ -85,6 +89,7 @@ public class BookController {
      * @param request DTO containing book creation data
      * @return the created book as {@link BookResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BookResponseDTO> createBook(
             @Valid @RequestBody BookRequestDTO request
@@ -102,6 +107,7 @@ public class BookController {
      * @param request DTO containing updated book data
      * @return the updated book as {@link BookResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BookResponseDTO> updateBook(
             @PathVariable Integer id,
@@ -120,6 +126,7 @@ public class BookController {
      * @param request DTO containing partial book data
      * @return the updated book as {@link BookResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<BookResponseDTO> patchBook(
             @PathVariable Integer id,
@@ -133,6 +140,7 @@ public class BookController {
      *
      * @param id book identifier
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Integer id) {
         bookService.delete(id);

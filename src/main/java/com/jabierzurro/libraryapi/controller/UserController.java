@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -46,6 +47,7 @@ public class UserController {
      *
      * @return list of users as {@link UserResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -57,6 +59,7 @@ public class UserController {
      * @param id user identifier
      * @return the user as {@link UserResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.getUserById(id));
@@ -74,6 +77,7 @@ public class UserController {
      * @param dni optional DNI filter
      * @return list of matching users
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponseDTO>> searchUsers(
         @RequestParam(required = false) String firstName,
@@ -94,6 +98,7 @@ public class UserController {
      * @param request DTO containing user data
      * @return the created user as {@link UserResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserResponseDTO> createUser(
             @Valid @RequestBody UserRequestDTO request
@@ -111,6 +116,8 @@ public class UserController {
      * @param request DTO containing updated user data
      * @return the updated user as {@link UserResponseDTO}
      */
+    
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Integer id,
@@ -129,6 +136,7 @@ public class UserController {
      * @param request DTO containing partial user data
      * @return the updated user as {@link UserResponseDTO}
      */
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @PatchMapping("/{id}")
     public ResponseEntity<UserResponseDTO> patchUser(
             @PathVariable Integer id,
@@ -143,6 +151,8 @@ public class UserController {
      * @param id user identifier
      * @return empty response with HTTP 204 status
      */
+    
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.delete(id);

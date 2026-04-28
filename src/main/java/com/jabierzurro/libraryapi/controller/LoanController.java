@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,47 +24,49 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST controller for managing loans.
- *
- * <p>This controller exposes HTTP endpoints for loan operations, including
- * retrieval, search, creation, update, partial update and deletion.
- *
- * <p>Request validation is applied to input DTOs, while business logic is
- * delegated to the service layer.
- *
- * @author Jabier Zurro Aduriz
- */
+* REST controller for managing loans.
+*
+* <p>This controller exposes HTTP endpoints for loan operations, including
+* retrieval, search, creation, update, partial update and deletion.
+*
+* <p>Request validation is applied to input DTOs, while business logic is
+* delegated to the service layer.
+*
+* @author Jabier Zurro Aduriz
+*/
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/loans")
 public class LoanController {
-    
+
     /**
      * Service layer dependency used to manage loans.
      */
     private final LoanService loanService;
-    
+
     /**
      * Retrieves all loans.
      *
      * @return HTTP 200 response containing the list of loans
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping
     public ResponseEntity<List<LoanResponseDTO>> getAllLoans() {
         return ResponseEntity.ok(loanService.getAllLoans());
     }
-    
+
     /**
      * Retrieves a loan by its identifier.
      *
      * @param id loan identifier
      * @return HTTP 200 response containing the requested loan
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<LoanResponseDTO> getLoanById(@PathVariable Integer id) {
         return ResponseEntity.ok(loanService.getLoanById(id));
     }
-    
+
     /**
      * Searches loans using optional filtering criteria.
      *
@@ -73,6 +76,7 @@ public class LoanController {
      * @param dueDate   due date of the loan
      * @return HTTP 200 response containing the matching loans
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/search")
     public ResponseEntity<List<LoanResponseDTO>> searchLoans(
             @RequestParam(required = false) Integer userId,
@@ -82,20 +86,21 @@ public class LoanController {
     ) {
         return ResponseEntity.ok(loanService.search(userId, status, startDate, dueDate));
     }
-    
+
     /**
      * Creates a new loan.
      *
      * @param request loan creation data
      * @return HTTP 201 response containing the created loan
      */
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping
     public ResponseEntity<LoanResponseDTO> createLoan(
             @Valid @RequestBody LoanRequestDTO request
     ){
         return ResponseEntity.status(201).body(loanService.create(request));
     }
-    
+
     /**
      * Fully updates an existing loan.
      *
@@ -103,6 +108,7 @@ public class LoanController {
      * @param request updated loan data
      * @return HTTP 200 response containing the updated loan
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<LoanResponseDTO> updateLoan(
             @PathVariable Integer id,
@@ -110,7 +116,7 @@ public class LoanController {
     ) {
         return ResponseEntity.ok(loanService.update(id, request));
     }
-    
+
     /**
      * Partially updates an existing loan.
      *
@@ -118,6 +124,7 @@ public class LoanController {
      * @param request partial update data
      * @return HTTP 200 response containing the updated loan
      */
+    @PreAuthorize("hasRole('ADMIN') or @loanSecurity.isOwner(#id, principal.id)")
     @PatchMapping("/{id}")
     public ResponseEntity<LoanResponseDTO> patchLoan(
             @PathVariable Integer id,
@@ -125,13 +132,14 @@ public class LoanController {
     ){
         return ResponseEntity.ok(loanService.patch(id, request));
     }
-    
+
     /**
      * Deletes a loan by its identifier.
      *
      * @param id loan identifier
      * @return HTTP 204 response with no content
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLoan(@PathVariable Integer id) {
         loanService.delete(id);
