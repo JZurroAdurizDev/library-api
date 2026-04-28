@@ -24,16 +24,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
-* REST controller for managing loans.
-*
-* <p>This controller exposes HTTP endpoints for loan operations, including
-* retrieval, search, creation, update, partial update and deletion.
-*
-* <p>Request validation is applied to input DTOs, while business logic is
-* delegated to the service layer.
-*
-* @author Jabier Zurro Aduriz
-*/
+ * REST controller for managing loans.
+ *
+ * <p>This controller exposes HTTP endpoints for loan operations, including
+ * retrieval, search, creation, update, partial update and deletion.
+ *
+ * <p>Request validation is applied to input DTOs, while business logic is
+ * delegated to the service layer.
+ *
+ * <p>Access control rules:
+ * <ul>
+ *     <li>ADMIN users have full access to all loan operations</li>
+ *     <li>Regular users can create loans and partially modify their own loans</li>
+ *     <li>Loan ownership is validated through a custom security component</li>
+ * </ul>
+ *
+ * @author Jabier Zurro Aduriz
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/loans")

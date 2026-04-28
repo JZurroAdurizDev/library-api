@@ -23,6 +23,12 @@ import org.springframework.web.bind.annotation.*;
  * <p>All responses are wrapped in {@link ResponseEntity} to provide appropriate
  * HTTP status codes.
  *
+ * <p>Access control rules:
+ * <ul>
+ *     <li>ADMIN users can create, update and delete books</li>
+ *     <li>USER and ADMIN roles can retrieve and search books</li>
+ * </ul>
+ *
  * @author Jabier Zurro Aduriz
  */
 @RestController

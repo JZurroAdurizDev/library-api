@@ -28,15 +28,16 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
  *     <li>password encoding,</li>
  *     <li>authentication provider configuration,</li>
  *     <li>JWT filter integration,</li>
- *     <li>method-level authorization.</li>
+ *     <li>method-level authorization using {@code @PreAuthorize} annotations.</li>
  * </ul>
  *
  * <p>The application uses JWT-based authentication, so sessions are configured
  * as stateless and the custom {@link JwtAuthFilter} is added before the standard
  * username/password authentication filter.
  *
- * <p>Endpoint-specific authorization rules can be declared at controller level
- * using annotations such as {@code @PreAuthorize}.
+ * <p>Method-level authorization is enabled via {@link EnableMethodSecurity},
+ * allowing fine-grained access control using annotations such as
+ * {@code @PreAuthorize}.
  */
 @Configuration
 @EnableMethodSecurity

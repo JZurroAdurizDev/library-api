@@ -43,7 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * <p>The controller is tested in isolation using {@link WebMvcTest}, while
  * all dependencies are mocked.
  *
- * <p>Security filters are disabled to focus exclusively on controller behavior.
+ * <p>Security filters are disabled, while role-based access is simulated
+ * using {@code @WithMockUser}.
  *
  * @author Jabier Zurro Aduriz
  */

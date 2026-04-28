@@ -33,6 +33,12 @@ import org.springframework.web.bind.annotation.RestController;
  * <p>All responses are returned as {@link UserResponseDTO} objects, ensuring
  * that sensitive information such as passwords is never exposed.
  *
+ * <p>Access control rules:
+ * <ul>
+ *     <li>ADMIN users can access and manage all user resources</li>
+ *     <li>Regular users can only access, update and delete their own data</li>
+ * </ul>
+ *
  * @author Jabier Zurro Aduriz
  */
 @RestController
@@ -116,7 +122,6 @@ public class UserController {
      * @param request DTO containing updated user data
      * @return the updated user as {@link UserResponseDTO}
      */
-    
     @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(
@@ -151,7 +156,6 @@ public class UserController {
      * @param id user identifier
      * @return empty response with HTTP 204 status
      */
-    
     @PreAuthorize("hasRole('ADMIN') or #id == principal.id")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {

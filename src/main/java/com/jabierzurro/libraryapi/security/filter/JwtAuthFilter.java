@@ -29,6 +29,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  *     <li>the token is validated,</li>
  *     <li>the username is extracted,</li>
  *     <li>the user details are loaded from the persistence layer,</li>
+ *     <li>the authorities are obtained from the loaded user details,</li>
  *     <li>an {@link Authentication} object is created,</li>
  *     <li>the authentication is stored in the {@link SecurityContext}.</li>
  * </ul>

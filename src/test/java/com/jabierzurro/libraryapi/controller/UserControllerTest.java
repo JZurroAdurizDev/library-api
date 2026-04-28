@@ -38,7 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * isolated MVC context. Dependencies are mocked to focus on request
  * handling, HTTP responses and JSON structure.
  *
- * <p>Security filters are disabled to test only controller logic.
+ * <p>Security filters are disabled, while role-based access is simulated
+ * using {@code @WithMockUser}.
  *
  * @author Jabier Zurro Aduriz
  */
