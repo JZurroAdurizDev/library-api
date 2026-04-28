@@ -75,6 +75,18 @@ public class LoanConflictException extends ConflictException {
             "Book with id " + bookId + " is not available for loan"
         );
     }
+    
+    /**
+     * Creates an exception indicating that one or more books are not available for loan.
+     *
+     * @return configured {@link LoanConflictException}
+     */
+    public static LoanConflictException oneOrMoreBooksNotAvailable() {
+        return new LoanConflictException(
+            Reason.BOOK_NOT_AVAILABLE,
+            "One or more books are not available for loan"
+        );
+    }
 
     /**
      * Creates an exception indicating that the user already has an active loan.
