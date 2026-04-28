@@ -24,6 +24,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 /**
+ * Service implementation for managing loans.
+ *
+ * <p>This class contains the business logic related to loans, including
+ * validation rules, conflict detection and interaction with persistence layers.
+ *
+ * <p>It ensures consistency between users, books and loans, enforcing
+ * constraints such as:
+ * <ul>
+ *   <li>A user cannot have more than one active loan</li>
+ *   <li>A book cannot be loaned if it is already part of an active loan</li>
+ *   <li>Loan dates must be valid and not overlap improperly</li>
+ * </ul>
+ *
+ * <p>This implementation maps entities to DTOs to decouple the service layer
+ * from the persistence layer.
  *
  * @author Jabier Zurro Aduriz
  */
@@ -31,10 +46,27 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LoanServiceImpl implements LoanService {
     
+    /**
+     * Repository for loan persistence operations.
+     */
     private final LoanRepository loanRepository;
+
+    /**
+     * Repository for user persistence operations.
+     */
     private final UserRepository userRepository;
+
+    /**
+     * Repository for book persistence operations.
+     */
     private final BookRepository bookRepository;
     
+    /**
+     * Retrieves all loans.
+     *
+     * @return list of loans as {@link LoanResponseDTO}
+     * @throws NotFoundException if no loans exist
+     */
     @Override
     public List<LoanResponseDTO> getAllLoans() {
         List<Loan> loans = this.loanRepository.findAll();
@@ -46,6 +78,13 @@ public class LoanServiceImpl implements LoanService {
                 .toList();
     }
 
+    /**
+     * Retrieves a loan by its identifier.
+     *
+     * @param id loan identifier
+     * @return loan as {@link LoanResponseDTO}
+     * @throws LoanNotFoundException if the loan does not exist
+     */
     @Override
     public LoanResponseDTO getLoanById(Integer id) {
         Loan loan = this.loanRepository.findById(id)
@@ -54,6 +93,15 @@ public class LoanServiceImpl implements LoanService {
         return toResponseDTO(loan);
     }
 
+    /**
+     * Searches loans based on optional filters.
+     *
+     * @param userId    user identifier
+     * @param status    loan status
+     * @param startDate start date
+     * @param dueDate   due date
+     * @return list of matching loans
+     */
     @Override
     public List<LoanResponseDTO> search(Integer userId, LoanStatus status, LocalDate startDate, LocalDate dueDate) {
         String statusValue = status != null ? status.name() : null;
@@ -65,6 +113,23 @@ public class LoanServiceImpl implements LoanService {
                 .toList();
     }
 
+    /**
+     * Creates a new loan.
+     *
+     * <p>Validates:
+     * <ul>
+     *   <li>Loan dates</li>
+     *   <li>User existence</li>
+     *   <li>User does not already have an active loan</li>
+     *   <li>Books existence and availability</li>
+     * </ul>
+     *
+     * @param request loan creation data
+     * @return created loan as {@link LoanResponseDTO}
+     * @throws UserNotFoundException if the user does not exist
+     * @throws NotFoundException if any book does not exist
+     * @throws LoanConflictException if business rules are violated
+     */
     @Override
     public LoanResponseDTO create(LoanRequestDTO request) {
 
@@ -109,6 +174,17 @@ public class LoanServiceImpl implements LoanService {
         return LoanServiceImpl.toResponseDTO(createdLoan);
     }
 
+    /**
+     * Fully updates an existing loan.
+     *
+     * <p>Validates loan dates and checks for book conflicts with other active loans.
+     *
+     * @param id loan identifier
+     * @param request update data
+     * @return updated loan as {@link LoanResponseDTO}
+     * @throws LoanNotFoundException if the loan does not exist
+     * @throws ConflictException if validation fails
+     */
     @Override
     public LoanResponseDTO update(Integer id, UpdateLoanRequestDTO request) {
 
@@ -132,6 +208,17 @@ public class LoanServiceImpl implements LoanService {
         return LoanServiceImpl.toResponseDTO(updatedLoan);
     }
 
+    /**
+     * Partially updates an existing loan.
+     *
+     * <p>Only non-null fields are updated. Dates are recalculated before validation.
+     *
+     * @param id loan identifier
+     * @param request partial update data
+     * @return updated loan as {@link LoanResponseDTO}
+     * @throws LoanNotFoundException if the loan does not exist
+     * @throws ConflictException if validation fails
+     */
     @Override
     public LoanResponseDTO patch(Integer id, PatchLoanRequestDTO request) {
 
@@ -168,6 +255,12 @@ public class LoanServiceImpl implements LoanService {
         return LoanServiceImpl.toResponseDTO(updatedLoan);
     }
 
+    /**
+     * Deletes a loan by its identifier.
+     *
+     * @param id loan identifier
+     * @throws LoanNotFoundException if the loan does not exist
+     */
     @Override
     public void delete(Integer id) {
         Loan loan = this.loanRepository.findById(id)
@@ -175,6 +268,19 @@ public class LoanServiceImpl implements LoanService {
         this.loanRepository.delete(loan);
     }
     
+    /**
+     * Validates loan dates.
+     *
+     * <p>Ensures:
+     * <ul>
+     *   <li>Dates are not in the past</li>
+     *   <li>Start date is not after due date</li>
+     * </ul>
+     *
+     * @param startDate start date
+     * @param dueDate   due date
+     * @throws ConflictException if validation fails
+     */
     private static void validateLoanDates(LocalDate startDate, LocalDate dueDate) {
         LocalDate today = LocalDate.now();
 
@@ -187,6 +293,15 @@ public class LoanServiceImpl implements LoanService {
         }
     }
 
+    /**
+     * Validates that no book in the loan conflicts with other active loans.
+     *
+     * @param currentLoan loan being validated
+     * @param loans       list of existing loans
+     * @param startDate   start date to validate
+     * @param dueDate     due date to validate
+     * @throws LoanConflictException if a conflict is detected
+     */
     private static void validateNoBookConflict(
             Loan currentLoan,
             List<Loan> loans,
@@ -216,6 +331,13 @@ public class LoanServiceImpl implements LoanService {
         }
     }
 
+    /**
+     * Updates loan status following business rules.
+     *
+     * @param loan            loan to update
+     * @param requestedStatus requested status
+     * @throws ConflictException if invalid transition is attempted
+     */
     private static void updateLoanStatus(Loan loan, LoanStatus requestedStatus) {
         if (requestedStatus == null) {
             return;
@@ -232,6 +354,12 @@ public class LoanServiceImpl implements LoanService {
         loan.setStatus(requestedStatus);
     }
     
+    /**
+     * Maps a {@link Loan} entity to {@link LoanResponseDTO}.
+     *
+     * @param loan loan entity
+     * @return mapped response DTO
+     */
     private static LoanResponseDTO toResponseDTO(Loan loan) {
         return new LoanResponseDTO(
                 loan.getId(),

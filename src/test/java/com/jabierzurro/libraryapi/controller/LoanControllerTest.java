@@ -33,6 +33,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 /**
+ * Web layer test class for {@link LoanController}.
+ *
+ * <p>This test suite verifies the HTTP contract exposed by the controller,
+ * including request handling, response status codes and JSON response structure.
+ *
+ * <p>The controller is tested in isolation using {@link WebMvcTest}, while
+ * all dependencies are mocked.
+ *
+ * <p>Security filters are disabled to focus exclusively on controller behavior.
  *
  * @author Jabier Zurro Aduriz
  */
@@ -40,22 +49,42 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 public class LoanControllerTest {
     
+    /**
+     * Mock MVC client used to perform HTTP requests.
+     */
     @Autowired
     private MockMvc mockMvc;
 
+    /**
+     * Mocked service layer dependency.
+     */
     @MockitoBean
     private LoanService loanService;
     
+    /**
+     * Mocked JWT service required for application context initialization.
+     */
     @MockitoBean
     private JwtService jwtService;
 
+    /**
+     * Mocked user details service required for application context initialization.
+     */
     @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
     
-    
+    /**
+     * Object mapper used to serialize request bodies to JSON.
+     * Includes Java Time module support.
+     */
     private final ObjectMapper objectMapper = new ObjectMapper()
         .findAndRegisterModules();
     
+    /**
+     * Verifies that GET /loans returns a list of loans with HTTP 200 status.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("GET /loans should return loan list")
     void getAllLoansShouldReturnOk() throws Exception {
@@ -92,6 +121,11 @@ public class LoanControllerTest {
             .andExpect(jsonPath("$[0].books[0].bookId").value(1));
     }
     
+    /**
+     * Verifies that GET /loans/{id} returns a loan when it exists.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("GET /loans/{id} should return loan when it exists")
     void getLoanByIdShouldReturnOk() throws Exception {
@@ -126,6 +160,11 @@ public class LoanControllerTest {
                 .andExpect(jsonPath("$.books[0].bookId").value(1));
     }
     
+    /**
+     * Verifies that GET /loans/search returns filtered results based on query parameters.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("GET /loans/search should return filtered loans")
     void searchLoansShouldReturnOk() throws Exception {
@@ -162,6 +201,11 @@ public class LoanControllerTest {
                 .andExpect(jsonPath("$[0].books[0].bookId").value(1));
     }
     
+    /**
+     * Verifies that POST /loans creates a new loan and returns HTTP 201.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("POST /loans should create loan and return 201")
     void createLoanShouldReturnCreated() throws Exception {
@@ -204,6 +248,11 @@ public class LoanControllerTest {
                 .andExpect(jsonPath("$.books[0].bookId").value(1));
     }
     
+    /**
+     * Verifies that PUT /loans/{id} fully updates a loan and returns HTTP 200.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("PUT /loans/{id} should update loan and return 200")
     void updateLoanShouldReturnOk() throws Exception {
@@ -245,6 +294,11 @@ public class LoanControllerTest {
                 .andExpect(jsonPath("$.books[0].bookId").value(1));
     }
     
+    /**
+     * Verifies that PATCH /loans/{id} partially updates a loan and returns HTTP 200.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("PATCH /loans/{id} should partially update loan and return 200")
     void patchLoanShouldReturnOk() throws Exception {
@@ -286,6 +340,13 @@ public class LoanControllerTest {
                 .andExpect(jsonPath("$.books[0].bookId").value(1));
     }
     
+    /**
+     * Verifies that DELETE /loans/{id} removes a loan and returns HTTP 204.
+     *
+     * <p>Also verifies that the delete operation is delegated to the service layer.
+     *
+     * @throws Exception if request execution fails
+     */
     @Test
     @DisplayName("DELETE /loans/{id} should return 204")
     void deleteLoanShouldReturnNoContent() throws Exception {
