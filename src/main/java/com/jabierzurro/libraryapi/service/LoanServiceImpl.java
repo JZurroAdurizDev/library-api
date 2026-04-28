@@ -122,19 +122,21 @@ public class LoanServiceImpl implements LoanService {
      *   <li>User existence</li>
      *   <li>User does not already have an active loan</li>
      *   <li>Books existence and availability</li>
+     *   <li>Maximum number of books per loan</li>
      * </ul>
      *
      * @param request loan creation data
      * @return created loan as {@link LoanResponseDTO}
      * @throws UserNotFoundException if the user does not exist
      * @throws NotFoundException if any book does not exist
-     * @throws LoanConflictException if business rules are violated
+     * @throws ConflictException if business rules are violated
      */
     @Override
     public LoanResponseDTO create(LoanRequestDTO request) {
 
         validateLoanDates(request.getStartDate(), request.getDueDate());
-
+        validateBookLimit(request.getBookIds());
+        
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(request.getUserId()));
 
@@ -268,6 +270,23 @@ public class LoanServiceImpl implements LoanService {
         this.loanRepository.delete(loan);
     }
     
+    
+    /**
+    * Validates the maximum number of books allowed in a loan.
+    *
+    * @param bookIds book identifiers included in the loan request
+    * @throws ConflictException if more than five books are requested
+    */
+    private static void validateBookLimit(List<Integer> bookIds) {
+        if (bookIds == null || bookIds.isEmpty()) {
+            throw new ConflictException("A loan must include at least one book") {};
+        }
+
+        if (bookIds.size() > 5) {
+            throw new ConflictException("A loan cannot include more than 5 books") {};
+        }
+    }
+        
     /**
      * Validates loan dates.
      *
