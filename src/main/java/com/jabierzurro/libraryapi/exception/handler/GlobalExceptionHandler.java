@@ -2,9 +2,10 @@ package com.jabierzurro.libraryapi.exception.handler;
 
 import com.jabierzurro.libraryapi.exception.base.ConflictException;
 import com.jabierzurro.libraryapi.exception.base.NotFoundException;
-import java.nio.file.AccessDeniedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -30,6 +31,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new CustomErrorResponse(ex.getMessage()),
                 HttpStatus.CONFLICT
+        );
+    }
+    
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<CustomErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex) {
+        return new ResponseEntity<>(
+                new CustomErrorResponse("Access denied"),
+                HttpStatus.FORBIDDEN
         );
     }
     
