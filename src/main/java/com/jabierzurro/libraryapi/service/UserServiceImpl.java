@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import static org.flywaydb.core.internal.util.StringUtils.hasText;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service implementation for user-related business operations.
@@ -57,6 +58,7 @@ public class UserServiceImpl implements UserService {
      * @return list of users as {@link UserResponseDTO}
      */
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> getAllUsers() {
         return this.userRepository.findAll().stream()
                 .map(UserServiceImpl::toResponseDTO)
@@ -71,6 +73,7 @@ public class UserServiceImpl implements UserService {
      * @throws UserNotFoundException if no user is found with the given id
      */
     @Override
+    @Transactional(readOnly = true)
     public UserResponseDTO getUserById(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -91,6 +94,7 @@ public class UserServiceImpl implements UserService {
      * @return list of matching users as {@link UserResponseDTO}
      */
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> search(String firstName, String lastName, String email, String dni) {
         List<User> users = this.userRepository.searchUsers(firstName, lastName, email, dni);
         return users.stream()
@@ -111,6 +115,7 @@ public class UserServiceImpl implements UserService {
      * @throws RoleNotFoundException if the default role cannot be found
      */
     @Override
+    @Transactional
     public UserResponseDTO create(UserRequestDTO request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw UserConflictException.emailAlreadyExists(request.getEmail());
@@ -120,8 +125,8 @@ public class UserServiceImpl implements UserService {
         }
 
         String passwordHash = this.passwordEncoder.encode(request.getPassword());
-        Role role = roleRepository.findByRoleName("ROLE_USER")
-        .orElseThrow(() -> new RoleNotFoundException("ROLE_USER"));
+        Role role = roleRepository.findByRoleName("USER")
+        .orElseThrow(() -> new RoleNotFoundException("USER"));
 
         User user = new User(
             request.getDni(),
@@ -151,6 +156,7 @@ public class UserServiceImpl implements UserService {
      * @throws UserConflictException if the new DNI already belongs to another user
      */
     @Override
+    @Transactional
     public UserResponseDTO update(Integer id, UpdateUserRequestDTO request) {
         User findUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -190,6 +196,7 @@ public class UserServiceImpl implements UserService {
      * @throws UserConflictException if the provided DNI already belongs to another user
      */
     @Override
+    @Transactional
     public UserResponseDTO patch(Integer id, PatchUserRequestDTO request) {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
@@ -228,6 +235,7 @@ public class UserServiceImpl implements UserService {
      * @throws UserNotFoundException if no user exists with the given id
      */
     @Override
+    @Transactional
     public void delete(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
