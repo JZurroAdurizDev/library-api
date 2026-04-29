@@ -2,6 +2,7 @@ package com.jabierzurro.libraryapi.controller;
 
 import com.jabierzurro.libraryapi.dto.system.ApiInfoResponse;
 import com.jabierzurro.libraryapi.dto.system.HealthResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +25,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SystemController {
 
+    @Value("${spring.application.name}")
+    private String appName;
+    
+    @Value("${app.version}")
+    private String appVersion;
+    
+    @Value("${app.developer}")
+    private String appDeveloper;
+    
     /**
      * Returns the current health status of the API.
      *
@@ -47,10 +57,10 @@ public class SystemController {
     public ResponseEntity<ApiInfoResponse> getInfo() {
         return ResponseEntity.ok(
                 new ApiInfoResponse(
-                        "library-api",
-                        "1.0.0",
+                        this.appName,
+                        this.appVersion,
                         "REST API for library management",
-                        "Jabier Zurro Aduriz"
+                        this.appDeveloper
                 )
         );
     }
