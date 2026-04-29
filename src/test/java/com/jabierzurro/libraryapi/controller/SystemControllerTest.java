@@ -61,10 +61,14 @@ class SystemControllerTest {
     @Test
     @DisplayName("GET /health should return API running status")
     void getHealthShouldReturnRunningStatus() throws Exception {
+        
+        // Arrange
         String endpoint = "/health";
 
+        // Act
         var result = mockMvc.perform(get(endpoint));
 
+        // Assert
         result.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith("application/json"))
               .andExpect(jsonPath("$.status").value("This API is running right now."));
@@ -78,10 +82,14 @@ class SystemControllerTest {
     @Test
     @DisplayName("GET / should return API info")
     void getRootShouldReturnApiInfo() throws Exception {
+        
+        // Arrange
         String endpoint = "/";
 
+        // Act
         var result = mockMvc.perform(get(endpoint));
 
+        // Assert
         result.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith("application/json"))
               .andExpect(jsonPath("$.service").value("library-api"))
@@ -98,11 +106,16 @@ class SystemControllerTest {
     @Test
     @DisplayName("GET / and /info should return API info")
     void getInfoEndpointsShouldReturnApiInfo() throws Exception {
+        
+        // Arrange
         String[] endpoints = {"/", "/info"};
 
         for (String endpoint : endpoints) {
+            
+            // Act
             var result = mockMvc.perform(get(endpoint));
 
+            // Assert
             result.andExpect(status().isOk())
                   .andExpect(content().contentTypeCompatibleWith("application/json"))
                   .andExpect(jsonPath("$.service").value("library-api"))

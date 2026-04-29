@@ -85,12 +85,14 @@ public class BookControllerTest {
     @DisplayName("GET /books should return book list")
     void getAllBooksShouldReturnOk() throws Exception {
 
+        // Arrange
         List<BookResponseDTO> books = List.of(
             new BookResponseDTO(1, "Dummy", "Dawson", "0-7414-9349-7", (short) 2025, 200)
         );
 
         when(bookService.getAllBooks()).thenReturn(books);
 
+        // Act + Assert
         mockMvc.perform(get("/books"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
@@ -107,12 +109,14 @@ public class BookControllerTest {
     @DisplayName("GET /books/{id} should return book when it exists")
     void getBookByIdShouldReturnOk() throws Exception {
 
+        // Arrange
         BookResponseDTO book = new BookResponseDTO(
             1, "Dummy", "Dawson", "0-7414-9349-7", (short) 2025, 200
         );
 
         when(bookService.getBookById(1)).thenReturn(book);
 
+        // Act + Assert
         mockMvc.perform(get("/books/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.bookId").value(1))
@@ -129,12 +133,14 @@ public class BookControllerTest {
     @DisplayName("GET /books/search should return filtered books")
     void searchBooksShouldReturnOk() throws Exception {
 
+        // Arrange
         List<BookResponseDTO> books = List.of(
             new BookResponseDTO(1, "Dummy", "Dawson", "0-7414-9349-7", (short) 2025, 200)
         );
 
         when(bookService.search("Dummy", null, null, null)).thenReturn(books);
 
+        // Act + Assert
         mockMvc.perform(get("/books/search")
                 .param("title", "Dummy"))
                 .andExpect(status().isOk())
@@ -153,6 +159,7 @@ public class BookControllerTest {
     @DisplayName("POST /books should create book and return 201")
     void createBookShouldReturnCreated() throws Exception {
 
+        // Arrange
         BookRequestDTO request = new BookRequestDTO(
             "Dummy",
             "Dawson",
@@ -172,6 +179,7 @@ public class BookControllerTest {
 
         when(bookService.create(any(BookRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(post("/books")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -190,6 +198,7 @@ public class BookControllerTest {
     @DisplayName("PUT /books/{id} should update book and return 200")
     void updateBookShouldReturnOk() throws Exception {
 
+        // Arrange
         BookRequestDTO request = new BookRequestDTO(
             "Dummy",
             "Dawson",
@@ -209,6 +218,7 @@ public class BookControllerTest {
 
         when(bookService.update(any(Integer.class), any(BookRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(put("/books/1")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -227,7 +237,8 @@ public class BookControllerTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("PATCH /books/{id} should partially update book and return 200")
     void patchBookShouldReturnOk() throws Exception {
-
+        
+        // Arrange
         PatchBookRequestDTO request = new PatchBookRequestDTO(
             "Updated Dummy",
             null,
@@ -247,6 +258,7 @@ public class BookControllerTest {
 
         when(bookService.patch(any(Integer.class), any(PatchBookRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(patch("/books/1")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -268,9 +280,11 @@ public class BookControllerTest {
     @DisplayName("DELETE /books/{id} should return 204")
     void deleteBookShouldReturnNoContent() throws Exception {
 
+        // Act
         mockMvc.perform(delete("/books/1"))
                 .andExpect(status().isNoContent());
 
+        // Assert
         verify(bookService).delete(1);
     }
 }
