@@ -96,6 +96,7 @@ public class LoanControllerTest {
     @DisplayName("GET /loans should return loan list")
     void getAllLoansShouldReturnOk() throws Exception {
 
+        // Arrange
         List<LoanResponseDTO> loans = List.of(
             new LoanResponseDTO(
                 1,
@@ -119,6 +120,7 @@ public class LoanControllerTest {
 
         when(loanService.getAllLoans()).thenReturn(loans);
 
+        // Act + Assert
         mockMvc.perform(get("/loans"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
@@ -138,6 +140,7 @@ public class LoanControllerTest {
     @DisplayName("GET /loans/{id} should return loan when it exists")
     void getLoanByIdShouldReturnOk() throws Exception {
 
+        // Arrange
         LoanResponseDTO loan = new LoanResponseDTO(
                 1,
                 1,
@@ -159,6 +162,7 @@ public class LoanControllerTest {
 
         when(loanService.getLoanById(1)).thenReturn(loan);
 
+        // Act + Assert
         mockMvc.perform(get("/loans/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.loanId").value(1))
@@ -178,6 +182,7 @@ public class LoanControllerTest {
     @DisplayName("GET /loans/search should return filtered loans")
     void searchLoansShouldReturnOk() throws Exception {
 
+        // Arrange
         List<LoanResponseDTO> loans = List.of(
             new LoanResponseDTO(
                 1,
@@ -201,6 +206,7 @@ public class LoanControllerTest {
 
         when(loanService.search(1, null, null, null)).thenReturn(loans);
 
+        // Act + Assert
         mockMvc.perform(get("/loans/search")
                 .param("userId", "1"))
                 .andExpect(status().isOk())
@@ -220,6 +226,7 @@ public class LoanControllerTest {
     @DisplayName("POST /loans should create loan and return 201")
     void createLoanShouldReturnCreated() throws Exception {
 
+        // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
                 1,
                 LocalDate.of(2026, 4, 27),
@@ -248,6 +255,7 @@ public class LoanControllerTest {
 
         when(loanService.create(any(LoanRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(post("/loans")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -268,6 +276,7 @@ public class LoanControllerTest {
     @DisplayName("PUT /loans/{id} should update loan and return 200")
     void updateLoanShouldReturnOk() throws Exception {
 
+        // Arrange
         UpdateLoanRequestDTO request = new UpdateLoanRequestDTO(
                 LocalDate.of(2026, 4, 27),
                 LocalDate.of(2026, 5, 4),
@@ -295,6 +304,7 @@ public class LoanControllerTest {
 
         when(loanService.update(any(Integer.class), any(UpdateLoanRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(put("/loans/1")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -315,6 +325,7 @@ public class LoanControllerTest {
     @DisplayName("PATCH /loans/{id} should partially update loan and return 200")
     void patchLoanShouldReturnOk() throws Exception {
 
+        // Arrange
         PatchLoanRequestDTO request = new PatchLoanRequestDTO(
                 LocalDate.of(2026, 4, 27),
                 LocalDate.of(2026, 5, 4),
@@ -342,6 +353,7 @@ public class LoanControllerTest {
 
         when(loanService.patch(any(Integer.class), any(PatchLoanRequestDTO.class))).thenReturn(response);
 
+        // Act + Assert
         mockMvc.perform(patch("/loans/1")
                 .contentType(APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -364,9 +376,11 @@ public class LoanControllerTest {
     @DisplayName("DELETE /loans/{id} should return 204")
     void deleteLoanShouldReturnNoContent() throws Exception {
 
+        // Act
         mockMvc.perform(delete("/loans/1"))
                 .andExpect(status().isNoContent());
 
+        // Assert
         verify(loanService).delete(1);
     }
 }
