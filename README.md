@@ -2,7 +2,7 @@
 
 REST API for managing book loans in a library system.
 
-This project is being built from scratch with a clean Git history, a database-first approach and a layered architecture.
+This project has been built from scratch following a database-first approach, a layered architecture and a clean Git workflow.
 
 ---
 
@@ -37,25 +37,86 @@ This project is being built from scratch with a clean Git history, a database-fi
 
 ### Users
 
-- GET /users → retrieve all users
-- GET /users/{id} → retrieve user by id
-- GET /users/search → search users by optional filters (firstName, lastName, email, dni)
-- POST /users → create a new user (intended for admin use)
-- PUT /users/{id} → full update of an existing user
-- PATCH /users/{id} → partial update of an existing user
-- DELETE /users/{id} → delete a user
+- GET /users → retrieve all users (ADMIN only)
+- GET /users/{id} → retrieve user by id (ADMIN or owner)
+- GET /users/search → search users (ADMIN only)
+- POST /users → create a new user (ADMIN only)
+- PUT /users/{id} → full update (ADMIN or owner)
+- PATCH /users/{id} → partial update (ADMIN or owner)
+- DELETE /users/{id} → delete user (ADMIN or owner)
 
 ### Books
 
 - GET /books → retrieve all books
 - GET /books/{id} → retrieve book by id
-- GET /books/search → search books by optional filters (title, author, year, isbn)
-- POST /books → create a new book (intended for admin use)
-- PUT /books/{id} → full update of an existing book
-- PATCH /books/{id} → partial update of an existing book
-- DELETE /books/{id} → delete a book
+- GET /books/search → search books (title, author, publishedYear, isbn)
+- POST /books → create a new book (ADMIN only)
+- PUT /books/{id} → full update (ADMIN only)
+- PATCH /books/{id} → partial update (ADMIN only)
+- DELETE /books/{id} → delete book (ADMIN only)
+
+### Loans
+
+- GET /loans → retrieve all loans (USER or ADMIN)
+- GET /loans/{id} → retrieve loan by id (USER or ADMIN)
+- GET /loans/search → search loans (userId, status, startDate, dueDate) (USER or ADMIN)
+- POST /loans → create a new loan (USER or ADMIN)
+- PUT /loans/{id} → full update of an existing loan (ADMIN only)
+- PATCH /loans/{id} → partial update of an existing loan (ADMIN or owner)
+- DELETE /loans/{id} → delete loan (ADMIN only)
 
 ---
+
+## Security
+
+Security is implemented using Spring Security and JWT.
+
+- Authentication mechanism is in place
+- JWT-based request filtering is configured
+- Core security components (filters, services, utilities) are implemented
+
+---
+
+### Authentication
+
+- JWT-based authentication
+- Tokens must be included in the `Authorization` header:
+
+```http
+Authorization: Bearer <token>
+```
+---
+
+### Roles
+
+- `ROLE_USER`
+- `ROLE_ADMIN`
+
+### Authorization rules
+
+- ADMIN users:
+    - Full access to all endpoints
+    - Can manage users and books
+- USER users:
+    - Can access their own user data
+    - Cannot access admin-only endpoints
+
+---
+
+## HTTP status behavior
+
+- 401 Unauthorized → Missing or invalid token
+- 403 Forbidden → Authenticated but insufficient permissions
+- 404 Not Found → Resource does not exist
+- 409 Conflict → Business rule violation (e.g. duplicate email or ISBN)
+
+---
+
+## API behavior
+
+- Search endpoints return 200 OK with an empty array when no results are found
+- Resource retrieval by ID returns 404 if not found
+- All responses are DTO-based (no sensitive data exposed)
 
 ## Example requests
 
@@ -65,6 +126,7 @@ The following examples show how to interact with the API using curl.
 
 ```bash
 curl -X POST http://localhost:8080/users \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "dni": "12345678A",
@@ -77,17 +139,20 @@ curl -X POST http://localhost:8080/users \
 
 ### Get all users
 ```bash
-curl http://localhost:8080/users
+curl http://localhost:8080/users \
+  -H "Authorization: Bearer <token>"
 ```
 
 ### Search users
 ```bash
-curl "http://localhost:8080/users/search?firstName=John"
+curl "http://localhost:8080/users/search?firstName=John" \
+  -H "Authorization: Bearer <token>"
 ```
 
-### Create a book
+### Create a book (ADMIN only)
 ```bash
 curl -X POST http://localhost:8080/books \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Clean Code",
@@ -100,17 +165,20 @@ curl -X POST http://localhost:8080/books \
 
 ### Get all books
 ```bash
-curl http://localhost:8080/books
+curl http://localhost:8080/books \
+   -H "Authorization: Bearer <token>"
 ```
 
 ### Search books
 ```bash
-curl "http://localhost:8080/books/search?title=Clean"
+curl "http://localhost:8080/books/search?title=Clean" \
+   -H "Authorization: Bearer <token>"
 ```
 
 ### Update a book (PUT)
 ```bash
 curl -X PUT http://localhost:8080/books/1 \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Clean Code",
@@ -124,6 +192,7 @@ curl -X PUT http://localhost:8080/books/1 \
 ### Partial update (PATCH)
 ```bash
 curl -X PATCH http://localhost:8080/books/1 \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Clean Code (Updated)"
@@ -132,23 +201,18 @@ curl -X PATCH http://localhost:8080/books/1 \
 
 ### Delete a book
 ```bash
-curl -X DELETE http://localhost:8080/books/1
+curl -X DELETE http://localhost:8080/books/1 \
+  -H "Authorization: Bearer <token>"
+```
+
+### Search loans
+```bash
+curl "http://localhost:8080/loans/search?userId=1&status=ACTIVE" \
+  -H "Authorization: Bearer <token>"
 ```
 
 ---
         
-## Security
-
-Security is implemented using Spring Security and JWT.
-
-- Authentication mechanism is in place
-- JWT-based request filtering is configured
-- Core security components (filters, services, utilities) are implemented
-
-⚠️ Authorization rules (endpoint access restrictions) are not yet fully defined and will be completed in a future feature.
-
----
-
 ## Database
 
 The database schema is managed using Flyway migrations.
@@ -207,24 +271,28 @@ Includes:
   
 ## Project status
 
-🚧 Work in progress
+✅ Completed (API phase)
 
-Implemented so far:
+The REST API is fully implemented and stable, including:
 
-- User endpoints (complete CRUD + search)
-- Book endpoints (complete CRUD + search)
-- DTO-based API design
-- Service layer with business rules
-- Repository layer with custom queries
-- Web layer testing
-- Base security configuration (JWT)
+- User management (CRUD + search)
+- Book management (CRUD + search)
+- Loan management (business rules implemented)
+- JWT authentication
+- Role-based authorization
+- Global exception handling
+- Web layer testing (MockMvc)
 
-Planned:
+---
 
-- Endpoint authorization rules
-- Loan domain implementation
-- Integration tests
-- Security refinement
+## Next steps
+
+The project will be extended with:
+
+- A Spring Data-based microservice
+- Communication between the main API and the microservice
+- Independent database persistence for the microservice
+- Advanced deployment strategies
 
 ## Development approach
 - Database-first design using Flyway
