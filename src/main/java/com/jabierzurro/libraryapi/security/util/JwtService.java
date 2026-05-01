@@ -159,27 +159,24 @@ public class JwtService {
     }
 
     /**
-     * Validates a JWT token and returns its decoded representation.
-     *
-     * <p>The token is validated against:
-     * <ul>
-     *     <li>the configured signing algorithm,</li>
-     *     <li>the expected issuer.</li>
-     * </ul>
-     *
-     * @param token raw JWT token
-     * @return validated and decoded {@link DecodedJWT}
-     * @throws JWTVerificationException if the token is invalid or cannot be verified
-     */
+    * Validates a JWT token and returns its decoded representation.
+    *
+    * <p>The token is validated against:
+    * <ul>
+    *     <li>the configured signing algorithm,</li>
+    *     <li>the expected issuer.</li>
+    * </ul>
+    *
+    * @param token raw JWT token
+    * @return validated and decoded {@link DecodedJWT}
+    * @throws JWTVerificationException if the token is invalid, expired or cannot be verified
+    */
     public DecodedJWT validateToken(String token) {
-        try {
-            Algorithm algorithm = getAlgorithm();
-            JWTVerifier verifier = JWT.require(algorithm)
-                    .withIssuer(this.issuer)
-                    .build();
-            return verifier.verify(token);
-        } catch (JWTVerificationException ex) {
-            throw new JWTVerificationException("Invalid token. Not authorized.");
-        }
+        Algorithm algorithm = getAlgorithm();
+        JWTVerifier verifier = JWT.require(algorithm)
+                .withIssuer(this.issuer)
+                .build();
+
+        return verifier.verify(token);
     }
 }
