@@ -73,6 +73,6 @@ public class UserRequestDTO {
      * encoded before persistence.
      */
     @NotBlank
-    @Size(max = 255)
+    @Size(min = 6, max = 255)
     private String password;
 }
