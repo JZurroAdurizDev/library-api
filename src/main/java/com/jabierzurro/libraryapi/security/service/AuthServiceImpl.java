@@ -2,6 +2,8 @@ package com.jabierzurro.libraryapi.security.service;
 
 import com.jabierzurro.libraryapi.entity.Role;
 import com.jabierzurro.libraryapi.entity.User;
+import com.jabierzurro.libraryapi.exception.role.RoleNotFoundException;
+import com.jabierzurro.libraryapi.exception.user.UserConflictException;
 import com.jabierzurro.libraryapi.repository.RoleRepository;
 import com.jabierzurro.libraryapi.repository.UserRepository;
 import com.jabierzurro.libraryapi.security.dto.AuthResponseDTO;
@@ -92,7 +94,7 @@ public class AuthServiceImpl implements AuthService {
      *
      * <p>This method:
      * <ul>
-     *     <li>checks that the email is not already in use,</li>
+     *     <li>checks that the email and DNI are not already in use,</li>
      *     <li>loads the default role for new users,</li>
      *     <li>creates and stores the user with an encoded password,</li>
      *     <li>authenticates the newly registered user,</li>
@@ -104,17 +106,22 @@ public class AuthServiceImpl implements AuthService {
      *
      * @param request registration request containing user data
      * @return authentication response containing the JWT token and its expiration time
-     * @throws RuntimeException if the email is already in use or the default role is missing
+     * @throws UserConflictException if the email or DNI already exists
+     * @throws RoleNotFoundException if the default role cannot be found
      */
     @Override
     public AuthResponseDTO register(RegisterRequestDTO request) {
 
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new RuntimeException("Email already in use");
+            throw UserConflictException.emailAlreadyExists(request.email());
+        }
+
+        if (userRepository.findByDni(request.dni()).isPresent()) {
+            throw UserConflictException.dniAlreadyExists(request.dni());
         }
 
         Role role = roleRepository.findByRoleName("USER")
-                .orElseThrow(() -> new RuntimeException("Default role not found"));
+                .orElseThrow(() -> new RoleNotFoundException("USER"));
 
         User user = new User();
         user.setDni(request.dni());
