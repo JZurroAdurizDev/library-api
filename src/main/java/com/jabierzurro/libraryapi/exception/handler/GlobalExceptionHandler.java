@@ -34,6 +34,14 @@ public class GlobalExceptionHandler {
         );
     }
     
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CustomErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return new ResponseEntity<>(
+                new CustomErrorResponse("Invalid request body. Check JSON format and date format. Dates must use yyyy-MM-dd."),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+    
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<CustomErrorResponse> handleAuthorizationDenied(AuthorizationDeniedException ex) {
         return new ResponseEntity<>(
