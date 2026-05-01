@@ -21,18 +21,21 @@ public record RegisterRequestDTO(
      * National identification number of the user.
      */
     @NotBlank
+    @Size(max = 9)
     String dni,
 
     /**
      * First name of the user.
      */
     @NotBlank
+    @Size(max = 100)
     String firstName,
 
     /**
      * Last name of the user.
      */
     @NotBlank
+    @Size(max = 100)
     String lastName,
 
     /**
@@ -40,6 +43,7 @@ public record RegisterRequestDTO(
      */
     @NotBlank
     @Email
+    @Size(max = 150)
     String email,
 
     /**
@@ -48,6 +52,6 @@ public record RegisterRequestDTO(
      * <p>This value will be encoded before being stored in the database.
      */
     @NotBlank
-    @Size(min = 6)
+    @Size(min = 6, max = 255)
     String password
 ) {}
