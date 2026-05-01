@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service implementation for managing loans.
@@ -68,6 +69,7 @@ public class LoanServiceImpl implements LoanService {
      * @throws NotFoundException if no loans exist
      */
     @Override
+    @Transactional(readOnly = true)
     public List<LoanResponseDTO> getAllLoans() {
         List<Loan> loans = this.loanRepository.findAll();
         if (loans.isEmpty()) {
@@ -86,6 +88,7 @@ public class LoanServiceImpl implements LoanService {
      * @throws LoanNotFoundException if the loan does not exist
      */
     @Override
+    @Transactional(readOnly = true)
     public LoanResponseDTO getLoanById(Integer id) {
         Loan loan = this.loanRepository.findById(id)
                 .orElseThrow(() -> new LoanNotFoundException(id));
@@ -103,6 +106,7 @@ public class LoanServiceImpl implements LoanService {
      * @return list of matching loans
      */
     @Override
+    @Transactional(readOnly = true)
     public List<LoanResponseDTO> search(Integer userId, LoanStatus status, LocalDate startDate, LocalDate dueDate) {
         String statusValue = status != null ? status.name() : null;
 
@@ -132,6 +136,7 @@ public class LoanServiceImpl implements LoanService {
      * @throws ConflictException if business rules are violated
      */
     @Override
+    @Transactional
     public LoanResponseDTO create(LoanRequestDTO request) {
 
         validateLoanDates(request.getStartDate(), request.getDueDate());
@@ -188,6 +193,7 @@ public class LoanServiceImpl implements LoanService {
      * @throws ConflictException if validation fails
      */
     @Override
+    @Transactional
     public LoanResponseDTO update(Integer id, UpdateLoanRequestDTO request) {
 
         Loan loan = loanRepository.findById(id)
@@ -222,6 +228,7 @@ public class LoanServiceImpl implements LoanService {
      * @throws ConflictException if validation fails
      */
     @Override
+    @Transactional
     public LoanResponseDTO patch(Integer id, PatchLoanRequestDTO request) {
 
         Loan loan = loanRepository.findById(id)
@@ -268,6 +275,7 @@ public class LoanServiceImpl implements LoanService {
      * @throws LoanNotFoundException if the loan does not exist
      */
     @Override
+    @Transactional
     public void delete(Integer id) {
         Loan loan = this.loanRepository.findById(id)
                 .orElseThrow(() -> new LoanNotFoundException(id));
