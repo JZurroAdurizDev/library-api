@@ -9,6 +9,8 @@ import com.jabierzurro.libraryapi.entity.Book;
 import com.jabierzurro.libraryapi.entity.Loan;
 import com.jabierzurro.libraryapi.entity.LoanStatus;
 import com.jabierzurro.libraryapi.entity.User;
+import com.jabierzurro.libraryapi.event.dto.LoanCreatedEvent;
+import com.jabierzurro.libraryapi.event.producer.LoanEventProducer;
 import com.jabierzurro.libraryapi.exception.base.ConflictException;
 import com.jabierzurro.libraryapi.exception.base.NotFoundException;
 import com.jabierzurro.libraryapi.exception.loan.LoanConflictException;
@@ -61,6 +63,8 @@ public class LoanServiceImpl implements LoanService {
      * Repository for book persistence operations.
      */
     private final BookRepository bookRepository;
+    
+    private final LoanEventProducer loanEventProducer;
     
     /**
      * Retrieves all loans.
@@ -178,6 +182,21 @@ public class LoanServiceImpl implements LoanService {
 
         loan.getBooks().addAll(books);
         Loan createdLoan = loanRepository.save(loan);
+        
+        LoanCreatedEvent event = new LoanCreatedEvent(
+            createdLoan.getId(),
+            user.getId(),
+            user.getEmail(),
+            books.stream()
+                    .map(Book::getTitle)
+                    .toList(),
+            createdLoan.getStartDate(),
+            createdLoan.getDueDate(),
+            LocalDateTime.now()
+        );
+        
+        loanEventProducer.publishLoanCreatedEvent(event);
+        
         return LoanServiceImpl.toResponseDTO(createdLoan);
     }
 
