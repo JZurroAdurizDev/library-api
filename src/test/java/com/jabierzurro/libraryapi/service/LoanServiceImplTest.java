@@ -2,8 +2,11 @@ package com.jabierzurro.libraryapi.service;
 
 import com.jabierzurro.libraryapi.dto.LoanRequestDTO;
 import com.jabierzurro.libraryapi.entity.Book;
+import com.jabierzurro.libraryapi.entity.Loan;
 import com.jabierzurro.libraryapi.entity.LoanStatus;
 import com.jabierzurro.libraryapi.entity.User;
+import com.jabierzurro.libraryapi.event.dto.LoanCreatedEvent;
+import com.jabierzurro.libraryapi.event.producer.LoanEventProducer;
 import com.jabierzurro.libraryapi.exception.base.ConflictException;
 import com.jabierzurro.libraryapi.exception.base.NotFoundException;
 import com.jabierzurro.libraryapi.exception.loan.LoanConflictException;
@@ -23,6 +26,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 
 /**
  * Unit test class for {@link LoanServiceImpl}.
@@ -51,6 +56,9 @@ class LoanServiceImplTest {
 
     @InjectMocks
     private LoanServiceImpl loanService;
+    
+    @Mock
+    private LoanEventProducer loanEventProducer;
     
     /**
      * Verifies that creating a loan fails when the user already has an active loan.
@@ -225,5 +233,44 @@ class LoanServiceImplTest {
             LoanConflictException.class,
             () -> loanService.create(request)
         );
+    }
+    
+    @Test
+    @DisplayName("Should publish loan created event when loan is created successfully")
+    void shouldPublishLoanCreatedEventWhenLoanIsCreatedSuccessfully() {
+
+        // Arrange
+        LoanRequestDTO request = new LoanRequestDTO(
+            1,
+            LocalDate.now().plusDays(1),
+            LocalDate.now().plusDays(5),
+            List.of(1)
+        );
+
+        User user = new User();
+        user.setId(1);
+        user.setEmail("user@test.com");
+
+        Book book = new Book();
+        book.setId(1);
+        book.setTitle("Clean Code");
+
+        when(userRepository.findById(1)).thenReturn(Optional.of(user));
+        when(loanRepository.existsByUser_IdAndStatus(1, LoanStatus.ACTIVE)).thenReturn(false);
+        when(bookRepository.findAllById(request.getBookIds())).thenReturn(List.of(book));
+        when(loanRepository.existsByStatusAndBooks_IdIn(LoanStatus.ACTIVE, request.getBookIds()))
+            .thenReturn(false);
+
+       when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
+            Loan loan = invocation.getArgument(0, Loan.class);
+            loan.setId(10);
+            return loan;
+        });
+
+        // Act
+        loanService.create(request);
+
+        // Assert
+        verify(loanEventProducer).publishLoanCreatedEvent(any(LoanCreatedEvent.class));
     }
 }
