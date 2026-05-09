@@ -12,6 +12,8 @@ This project has been built from scratch following a database-first approach, a 
 - Spring Boot
 - Spring Security (JWT)
 - Spring Data JPA
+- Spring for Apache Kafka
+- Apache Kafka
 - MySQL
 - Flyway
 - Maven
@@ -24,6 +26,14 @@ This project has been built from scratch following a database-first approach, a 
 - Each loan can include up to 5 books
 - A user can only have one active loan at a time
 - Books cannot be loaned to multiple users simultaneously
+
+---
+
+## Event-driven communication
+
+- Loan creation publishes LoanCreatedEvent messages to Kafka
+- Events are serialized as JSON
+- Events are intended to be consumed by external microservices
 
 ---
 
@@ -244,6 +254,8 @@ Execute it manually in MySQL (e.g. using MySQL Workbench).
 
 ⚠️ The real setup_local.sql file is ignored by Git because it may contain local credentials.
 
+---
+
 ## Architecture
 
 The application follows a layered architecture:
@@ -253,12 +265,20 @@ The application follows a layered architecture:
 - Repository layer → Data access using Spring Data JPA
 - DTO layer → Data transfer between API boundaries
 - Entity layer → Database representation
+- Event layer → Kafka event DTOs and producers
+
+The application also includes an event-driven communication layer based on Apache Kafka for asynchronous integration with external microservices.
+
+---
 
 ## Testing
 - Controller tests implemented using MockMvc
 - Tests validate HTTP status codes and JSON responses
-- Dependencies are mocked to isolate the web layer
+- Dependencies are mocked to isolate application layers during testing
  
+
+---
+
 ## Exception handling
 
 A global exception handling mechanism is implemented using @ControllerAdvice.
@@ -269,6 +289,9 @@ Includes:
 - Domain-specific exceptions per entity (Book, User, Loan)
 - Standardized error responses (timestamp, message)
   
+
+---
+
 ## Project status
 
 ✅ Completed (API phase)
@@ -282,6 +305,9 @@ The REST API is fully implemented and stable, including:
 - Role-based authorization
 - Global exception handling
 - Web layer testing (MockMvc)
+- Kafka producer integration
+- Asynchronous LoanCreatedEvent publishing
+- Service layer unit testing for Kafka event publishing
 
 ---
 
@@ -289,10 +315,12 @@ The REST API is fully implemented and stable, including:
 
 The project will be extended with:
 
-- A Spring Data-based microservice
-- Communication between the main API and the microservice
+- A notification microservice based on Spring Boot
+- Kafka consumer implementation in the notification microservice
 - Independent database persistence for the microservice
 - Advanced deployment strategies
+
+---
 
 ## Development approach
 - Database-first design using Flyway
@@ -301,3 +329,4 @@ The project will be extended with:
 - Security handled via Spring Security and JWT
 - Git workflow based on main, develop and feature branches
 - Features developed in isolated branches and merged via Pull Requests
+- Event-driven communication using Apache Kafka
