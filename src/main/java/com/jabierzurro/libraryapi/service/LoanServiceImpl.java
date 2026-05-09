@@ -64,6 +64,9 @@ public class LoanServiceImpl implements LoanService {
      */
     private final BookRepository bookRepository;
     
+    /**
+     * Producer responsible for publishing loan-related domain events to Kafka.
+     */
     private final LoanEventProducer loanEventProducer;
     
     /**
@@ -132,6 +135,10 @@ public class LoanServiceImpl implements LoanService {
      *   <li>Books existence and availability</li>
      *   <li>Maximum number of books per loan</li>
      * </ul>
+     *
+     * <p>After the loan is successfully persisted, this method publishes a
+     * {@link LoanCreatedEvent} to Kafka so external services can react
+     * asynchronously to the loan creation.
      *
      * @param request loan creation data
      * @return created loan as {@link LoanResponseDTO}
