@@ -1,6 +1,5 @@
 package com.jabierzurro.libraryapi.event.producer;
 
-import com.jabierzurro.libraryapi.event.dto.LoanCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -8,7 +7,7 @@ import org.springframework.stereotype.Service;
 /**
  * Kafka producer responsible for publishing loan-related domain events.
  *
- * <p>This service sends {@link LoanCreatedEvent} messages to the configured
+ * <p>This service publishes loan-related domain events to the configured
  * Kafka topic so external microservices can consume them asynchronously.
  *
  * <p>The loan identifier is used as the Kafka message key to improve message
@@ -28,17 +27,19 @@ public class LoanEventProducer {
     /**
      * Kafka template used to publish loan events.
      */
-    private final KafkaTemplate<String, LoanCreatedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     /**
-     * Publishes a loan created event to Kafka.
+     * Publishes a loan-related event to Kafka.
      *
-     * @param event loan creation event
+     * @param loanId loan identifier used as Kafka message key
+     * @param event domain event payload
      */
-    public void publishLoanCreatedEvent(LoanCreatedEvent event) {
+    public void publishLoanEvent(Integer loanId, Object event) {
+
         kafkaTemplate.send(
                 TOPIC,
-                event.loanId().toString(),
+                loanId.toString(),
                 event
         );
     }

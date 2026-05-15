@@ -1,11 +1,14 @@
 package com.jabierzurro.libraryapi.service;
 
 import com.jabierzurro.libraryapi.dto.LoanRequestDTO;
+import com.jabierzurro.libraryapi.dto.PatchLoanRequestDTO;
 import com.jabierzurro.libraryapi.entity.Book;
 import com.jabierzurro.libraryapi.entity.Loan;
 import com.jabierzurro.libraryapi.entity.LoanStatus;
 import com.jabierzurro.libraryapi.entity.User;
+import com.jabierzurro.libraryapi.event.dto.LoanClosedEvent;
 import com.jabierzurro.libraryapi.event.dto.LoanCreatedEvent;
+import com.jabierzurro.libraryapi.event.dto.LoanUpdatedEvent;
 import com.jabierzurro.libraryapi.event.producer.LoanEventProducer;
 import com.jabierzurro.libraryapi.exception.base.ConflictException;
 import com.jabierzurro.libraryapi.exception.base.NotFoundException;
@@ -27,6 +30,7 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 /**
@@ -278,6 +282,76 @@ class LoanServiceImplTest {
         loanService.create(request);
 
         // Assert
-        verify(loanEventProducer).publishLoanCreatedEvent(any(LoanCreatedEvent.class));
+        verify(loanEventProducer).publishLoanEvent(any(Integer.class), any(LoanCreatedEvent.class));
+    }
+    
+    @Test
+    @DisplayName("Should publish loan updated event when loan dates are patched")
+    void shouldPublishLoanUpdatedEventWhenLoanDatesArePatched() {
+
+        // Arrange
+        User user = new User();
+        user.setId(1);
+        user.setEmail("user@test.com");
+
+        Loan loan = new Loan(
+            user,
+            LocalDate.now().plusDays(1),
+            LocalDate.now().plusDays(5),
+            LoanStatus.ACTIVE
+        );
+        loan.setId(10);
+
+        PatchLoanRequestDTO request = new PatchLoanRequestDTO(
+            LocalDate.now().plusDays(2),
+            LocalDate.now().plusDays(6),
+            null
+        );
+
+        when(loanRepository.findById(10)).thenReturn(Optional.of(loan));
+        when(loanRepository.findAll()).thenReturn(List.of(loan));
+        when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        loanService.patch(10, request);
+
+        // Assert
+        verify(loanEventProducer).publishLoanEvent(any(Integer.class), any(LoanUpdatedEvent.class));
+        verify(loanEventProducer, never()).publishLoanEvent(any(Integer.class), any(LoanClosedEvent.class));
+    }
+    
+    @Test
+    @DisplayName("Should publish loan closed event when loan status is patched to closed")
+    void shouldPublishLoanClosedEventWhenLoanStatusIsPatchedToClosed() {
+
+        // Arrange
+        User user = new User();
+        user.setId(1);
+        user.setEmail("user@test.com");
+
+        Loan loan = new Loan(
+            user,
+            LocalDate.now().plusDays(1),
+            LocalDate.now().plusDays(5),
+            LoanStatus.ACTIVE
+        );
+        loan.setId(10);
+
+        PatchLoanRequestDTO request = new PatchLoanRequestDTO(
+            null,
+            null,
+            LoanStatus.CLOSED
+        );
+
+        when(loanRepository.findById(10)).thenReturn(Optional.of(loan));
+        when(loanRepository.findAll()).thenReturn(List.of(loan));
+        when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        loanService.patch(10, request);
+
+        // Assert
+        verify(loanEventProducer).publishLoanEvent(any(Integer.class), any(LoanClosedEvent.class));
+        verify(loanEventProducer, never()).publishLoanEvent(any(Integer.class), any(LoanUpdatedEvent.class));
     }
 }

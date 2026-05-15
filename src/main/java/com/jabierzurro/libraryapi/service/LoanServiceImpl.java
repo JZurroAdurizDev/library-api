@@ -9,7 +9,9 @@ import com.jabierzurro.libraryapi.entity.Book;
 import com.jabierzurro.libraryapi.entity.Loan;
 import com.jabierzurro.libraryapi.entity.LoanStatus;
 import com.jabierzurro.libraryapi.entity.User;
+import com.jabierzurro.libraryapi.event.dto.LoanClosedEvent;
 import com.jabierzurro.libraryapi.event.dto.LoanCreatedEvent;
+import com.jabierzurro.libraryapi.event.dto.LoanUpdatedEvent;
 import com.jabierzurro.libraryapi.event.producer.LoanEventProducer;
 import com.jabierzurro.libraryapi.exception.base.ConflictException;
 import com.jabierzurro.libraryapi.exception.base.NotFoundException;
@@ -202,7 +204,7 @@ public class LoanServiceImpl implements LoanService {
             LocalDateTime.now()
         );
         
-        loanEventProducer.publishLoanCreatedEvent(event);
+        loanEventProducer.publishLoanEvent(createdLoan.getId(), event);
         
         return LoanServiceImpl.toResponseDTO(createdLoan);
     }
@@ -247,6 +249,10 @@ public class LoanServiceImpl implements LoanService {
      *
      * <p>Only non-null fields are updated. Dates are recalculated before validation.
      *
+     * <p>After the loan is successfully updated, this method publishes a
+     * {@link LoanUpdatedEvent} to Kafka so external microservices can react
+     * asynchronously to the loan modification.
+     *
      * @param id loan identifier
      * @param request partial update data
      * @return updated loan as {@link LoanResponseDTO}
@@ -263,6 +269,10 @@ public class LoanServiceImpl implements LoanService {
         if (loan.getStatus() == LoanStatus.CLOSED) {
             throw new ConflictException("Closed loans cannot be modified") {};
         }
+
+        LocalDate previousStartDate = loan.getStartDate();
+        LocalDate previousDueDate = loan.getDueDate();
+        LoanStatus previousStatus = loan.getStatus();
 
         LocalDate newStartDate = request.getStartDate() != null
                 ? request.getStartDate()
@@ -291,6 +301,42 @@ public class LoanServiceImpl implements LoanService {
         updateLoanStatus(loan, request.getStatus());
 
         Loan updatedLoan = loanRepository.save(loan);
+
+        boolean datesChanged =
+                !previousStartDate.equals(updatedLoan.getStartDate())
+                || !previousDueDate.equals(updatedLoan.getDueDate());
+
+        boolean loanWasClosed =
+                previousStatus != LoanStatus.CLOSED
+                && updatedLoan.getStatus() == LoanStatus.CLOSED;
+
+        if (datesChanged) {
+            LoanUpdatedEvent event = new LoanUpdatedEvent(
+                    updatedLoan.getId(),
+                    updatedLoan.getUser().getId(),
+                    updatedLoan.getUser().getEmail(),
+                    previousStartDate,
+                    previousDueDate,
+                    updatedLoan.getStartDate(),
+                    updatedLoan.getDueDate(),
+                    LocalDateTime.now()
+            );
+
+            loanEventProducer.publishLoanEvent(updatedLoan.getId(), event);
+        }
+
+        if (loanWasClosed) {
+            LoanClosedEvent event = new LoanClosedEvent(
+                    updatedLoan.getId(),
+                    updatedLoan.getUser().getId(),
+                    updatedLoan.getUser().getEmail(),
+                    updatedLoan.getClosedAt(),
+                    LocalDateTime.now()
+            );
+
+            loanEventProducer.publishLoanEvent(updatedLoan.getId(), event);
+        }
+
         return LoanServiceImpl.toResponseDTO(updatedLoan);
     }
 
