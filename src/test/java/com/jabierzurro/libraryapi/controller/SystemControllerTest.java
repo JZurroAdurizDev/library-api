@@ -93,7 +93,7 @@ class SystemControllerTest {
         result.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith("application/json"))
               .andExpect(jsonPath("$.service").value("library-api"))
-              .andExpect(jsonPath("$.version").value("1.0.0"))
+              .andExpect(jsonPath("$.version").value("1.1.0"))
               .andExpect(jsonPath("$.description").value("REST API for library management"))
               .andExpect(jsonPath("$.author").value("Jabier Zurro Aduriz"));
     }
@@ -119,7 +119,7 @@ class SystemControllerTest {
             result.andExpect(status().isOk())
                   .andExpect(content().contentTypeCompatibleWith("application/json"))
                   .andExpect(jsonPath("$.service").value("library-api"))
-                  .andExpect(jsonPath("$.version").value("1.0.0"))
+                  .andExpect(jsonPath("$.version").value("1.1.0"))
                   .andExpect(jsonPath("$.description").value("REST API for library management"))
                   .andExpect(jsonPath("$.author").value("Jabier Zurro Aduriz"));
         }
