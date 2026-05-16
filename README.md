@@ -31,9 +31,28 @@ This project has been built from scratch following a database-first approach, a 
 
 ## Event-driven communication
 
-- Loan creation publishes LoanCreatedEvent messages to Kafka
-- Events are serialized as JSON
-- Events are intended to be consumed by external microservices
+The application includes an event-driven communication layer based on Apache Kafka.
+
+Currently published domain events:
+
+- `LoanCreatedEvent`
+- `LoanUpdatedEvent`
+- `LoanClosedEvent`
+
+Events are:
+
+- Serialized as JSON
+- Published asynchronously to Kafka
+- Keyed by loan identifier to preserve ordering consistency
+- Intended to be consumed by external microservices
+
+Current consumer support:
+
+- `notification-service` currently consumes:
+
+  - `LoanCreatedEvent`
+  - `LoanUpdatedEvent`
+  - `LoanClosedEvent`
 
 ---
 
@@ -306,8 +325,18 @@ The REST API is fully implemented and stable, including:
 - Global exception handling
 - Web layer testing (MockMvc)
 - Kafka producer integration
-- Asynchronous LoanCreatedEvent publishing
+- Asynchronous publishing of:
+    - LoanCreatedEvent
+    - LoanUpdatedEvent
+    - LoanClosedEvent
 - Service layer unit testing for Kafka event publishing
+
+✅ Consumer-side support for:
+    - LoanCreatedEvent
+    - LoanUpdatedEvent
+    - LoanClosedEvent
+
+is fully implemented in notification-service.
 
 ---
 
@@ -315,10 +344,12 @@ The REST API is fully implemented and stable, including:
 
 The project will be extended with:
 
-- A notification microservice based on Spring Boot
-- Kafka consumer implementation in the notification microservice
-- Independent database persistence for the microservice
-- Advanced deployment strategies
+- Advanced Kafka consumer strategies
+- Retry and dead-letter queue handling
+- Monitoring and observability
+- Docker and Kubernetes deployment
+- Integration and end-to-end testing
+- Real email provider integration
 
 ---
 
