@@ -340,16 +340,31 @@ is fully implemented in notification-service.
 
 ---
 
-## Next steps
+## Deployment
 
-The project will be extended with:
+The application stack is fully containerized using Docker Compose.
 
-- Advanced Kafka consumer strategies
-- Retry and dead-letter queue handling
-- Monitoring and observability
-- Docker and Kubernetes deployment
-- Integration and end-to-end testing
-- Real email provider integration
+Current infrastructure includes:
+
+- Nginx reverse proxy with HTTPS
+- Spring Boot REST API
+- Kafka broker + ZooKeeper
+- Notification microservice
+- Independent MySQL databases per service
+- Environment-based configuration using `.env`
+
+The full event-driven flow has been validated end-to-end:
+API → Kafka → notification-service
+
+---
+
+## Infrastructure
+
+- Docker Compose
+- Nginx
+- HTTPS (self-signed SSL)
+- Apache Kafka
+- MySQL 8
 
 ---
 
