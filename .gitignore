@@ -38,4 +38,3 @@ src/main/resources/application.properties
 
 # Local database setup (contains credentials)
 sql/setup_local.sql
-nbactions.xml
