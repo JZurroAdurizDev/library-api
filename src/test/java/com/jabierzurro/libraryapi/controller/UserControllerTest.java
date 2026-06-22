@@ -5,6 +5,8 @@ import com.jabierzurro.libraryapi.dto.UserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UserResponseDTO;
 import com.jabierzurro.libraryapi.dto.PatchUserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UpdateUserRequestDTO;
+import com.jabierzurro.libraryapi.security.model.UserDetailsImpl;
+import com.jabierzurro.libraryapi.security.service.JwtCookieService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import com.jabierzurro.libraryapi.service.UserService;
@@ -17,19 +19,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-
 
 /**
  * Web layer test for {@link UserController}.
@@ -60,6 +67,9 @@ public class UserControllerTest {
 
     @MockitoBean
     private UserDetailsServiceImpl userDetailsService;
+    
+    @MockitoBean
+    private JwtCookieService jwtCookieService;
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -68,7 +78,14 @@ public class UserControllerTest {
 
         // Arrange
         List<UserResponseDTO> users = List.of(
-            new UserResponseDTO(1, "12345678A", "John", "Wick", "jwick@test.com", "ROLE_USER")
+            new UserResponseDTO(
+                1,
+                "12345678A",
+                "John",
+                "Wick",
+                "jwick@test.com",
+                "ROLE_USER"
+            )
         );
 
         when(userService.getAllUsers()).thenReturn(users);
@@ -87,7 +104,12 @@ public class UserControllerTest {
 
         // Arrange
         UserResponseDTO user = new UserResponseDTO(
-            1, "12345678A", "John", "Wick", "jwick@test.com", "ROLE_USER"
+            1,
+            "12345678A",
+            "John",
+            "Wick",
+            "jwick@test.com",
+            "ROLE_USER"
         );
 
         when(userService.getUserById(1)).thenReturn(user);
@@ -106,7 +128,14 @@ public class UserControllerTest {
 
         // Arrange
         List<UserResponseDTO> users = List.of(
-            new UserResponseDTO(1, "12345678A", "John", "Wick", "john@test.com", "ROLE_USER")
+            new UserResponseDTO(
+                1,
+                "12345678A",
+                "John",
+                "Wick",
+                "john@test.com",
+                "ROLE_USER"
+            )
         );
 
         when(userService.search("John", null, null, null)).thenReturn(users);
@@ -176,7 +205,10 @@ public class UserControllerTest {
             "ROLE_USER"
         );
 
-        when(userService.update(any(Integer.class), any(UpdateUserRequestDTO.class))).thenReturn(response);
+        when(userService.update(
+                any(Integer.class),
+                any(UpdateUserRequestDTO.class)
+        )).thenReturn(response);
 
         // Act + Assert
         mockMvc.perform(put("/users/1")
@@ -210,7 +242,10 @@ public class UserControllerTest {
             "ROLE_USER"
         );
 
-        when(userService.patch(any(Integer.class), any(PatchUserRequestDTO.class))).thenReturn(response);
+        when(userService.patch(
+                any(Integer.class),
+                any(PatchUserRequestDTO.class)
+        )).thenReturn(response);
 
         // Act + Assert
         mockMvc.perform(patch("/users/1")
@@ -232,5 +267,61 @@ public class UserControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(userService).delete(1);
+    }
+
+    @Test
+    @DisplayName("GET /users/me should return the authenticated user")
+    void getCurrentUserShouldReturnOk() throws Exception {
+
+        // Arrange
+        UserDetailsImpl principal = mock(UserDetailsImpl.class);
+
+        when(principal.getId()).thenReturn(1);
+        when(principal.getUsername()).thenReturn("john@test.com");
+        when(principal.getPassword()).thenReturn("password");
+
+        doReturn(
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        ).when(principal).getAuthorities();
+
+        UserResponseDTO response = new UserResponseDTO(
+                1,
+                "12345678A",
+                "John",
+                "Wick",
+                "john@test.com",
+                "ROLE_USER"
+        );
+
+        when(userService.getUserById(1)).thenReturn(response);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        principal,
+                        null,
+                        principal.getAuthorities()
+                );
+
+        SecurityContext securityContext =
+                SecurityContextHolder.createEmptyContext();
+
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        try {
+            // Act + Assert
+            mockMvc.perform(get("/users/me"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.dni").value("12345678A"))
+                    .andExpect(jsonPath("$.firstName").value("John"))
+                    .andExpect(jsonPath("$.lastName").value("Wick"))
+                    .andExpect(jsonPath("$.email").value("john@test.com"))
+                    .andExpect(jsonPath("$.role").value("ROLE_USER"));
+
+            verify(userService).getUserById(1);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 }
