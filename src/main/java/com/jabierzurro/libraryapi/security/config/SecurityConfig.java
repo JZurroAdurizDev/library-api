@@ -98,6 +98,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     PathPatternRequestMatcher.withDefaults().matcher("/"),
                     PathPatternRequestMatcher.withDefaults().matcher("/auth/login"),
+                    PathPatternRequestMatcher.withDefaults().matcher("/auth/logout"),
                     PathPatternRequestMatcher.withDefaults().matcher("/auth/register"),
                     PathPatternRequestMatcher.withDefaults().matcher("/health"),
                     PathPatternRequestMatcher.withDefaults().matcher("/info")
@@ -163,6 +164,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
             List.of("http://localhost:4200")
         );
+
+        configuration.setAllowCredentials(true);
 
         configuration.setAllowedMethods(
             List.of(
