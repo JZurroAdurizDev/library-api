@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.jabierzurro.libraryapi.security.model.UserDetailsImpl;
+import com.jabierzurro.libraryapi.security.service.JwtCookieService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import jakarta.servlet.FilterChain;
@@ -47,19 +48,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
+    private final JwtCookieService jwtCookieService;
 
     /**
      * Constructor for injecting the JWT service and user details service.
      *
      * @param jwtService service responsible for token validation and claim extraction
      * @param userDetailsService service used to load authenticated user details
+     * @param jwtCookieService service responsible for creating, extracting and deleting the HTTP cookie used to transport the JWT authentication token.
      */
     public JwtAuthFilter(
             JwtService jwtService,
-            UserDetailsServiceImpl userDetailsService
+            UserDetailsServiceImpl userDetailsService,
+            JwtCookieService jwtCookieService
     ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
+        this.jwtCookieService = jwtCookieService;
     }
 
     /**
@@ -83,17 +88,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String jwtToken = this.jwtCookieService.extractToken(request);
 
-        if (jwtToken != null && jwtToken.startsWith("Bearer ")) {
-            jwtToken = jwtToken.substring(7);
+        if (jwtToken == null) {
+            String authorizationHeader =
+                    request.getHeader(HttpHeaders.AUTHORIZATION);
 
+            if (authorizationHeader != null
+                    && authorizationHeader.startsWith("Bearer ")) {
+                jwtToken = authorizationHeader.substring(7);
+            }
+        }
+
+        if (jwtToken != null) {
             try {
-                DecodedJWT decodedJWT = jwtService.validateToken(jwtToken);
-                String username = jwtService.extractUsername(decodedJWT);
+                DecodedJWT decodedJWT = this.jwtService.validateToken(jwtToken);
+                String username = this.jwtService.extractUsername(decodedJWT);
 
                 UserDetailsImpl userDetails =
-                        (UserDetailsImpl) userDetailsService.loadUserByUsername(username);
+                        (UserDetailsImpl) this.userDetailsService
+                                .loadUserByUsername(username);
 
                 Authentication authentication =
                         new UsernamePasswordAuthenticationToken(
@@ -102,20 +116,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 userDetails.getAuthorities()
                         );
 
-                SecurityContext context = SecurityContextHolder.getContext();
+                SecurityContext context =
+                        SecurityContextHolder.getContext();
+
                 context.setAuthentication(authentication);
                 SecurityContextHolder.setContext(context);
 
             } catch (TokenExpiredException ex) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"message\":\"Token expired\"}");
+                response.getWriter().write(
+                        "{\"message\":\"Token expired\"}"
+                );
                 return;
 
             } catch (JWTVerificationException ex) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"message\":\"Invalid token\"}");
+                response.getWriter().write(
+                        "{\"message\":\"Invalid token\"}"
+                );
                 return;
             }
         }
