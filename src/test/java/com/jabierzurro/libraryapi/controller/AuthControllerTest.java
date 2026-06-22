@@ -5,13 +5,17 @@ import com.jabierzurro.libraryapi.security.dto.AuthResponseDTO;
 import com.jabierzurro.libraryapi.security.dto.LoginRequestDTO;
 import com.jabierzurro.libraryapi.security.dto.RegisterRequestDTO;
 import com.jabierzurro.libraryapi.security.service.AuthService;
+import com.jabierzurro.libraryapi.security.service.JwtCookieService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
+import java.time.Duration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -25,7 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *
  * <p>This test verifies the behavior of the authentication controller in an
  * isolated MVC context. The controller dependencies are mocked in order to
- * focus exclusively on request handling, HTTP status codes and JSON responses.
+ * focus exclusively on request handling, HTTP status codes, authentication
+ * cookies and JSON responses.
  *
  * <p>Security filters are disabled for this test because the goal is to validate
  * the controller contract rather than the full security chain.
@@ -54,6 +59,12 @@ class AuthControllerTest {
     private AuthService authService;
 
     /**
+     * Mocked cookie service used to create authentication cookies.
+     */
+    @MockitoBean
+    private JwtCookieService jwtCookieService;
+
+    /**
      * Mocked JWT service required by the application context.
      */
     @MockitoBean
@@ -66,25 +77,38 @@ class AuthControllerTest {
     private UserDetailsServiceImpl userDetailsService;
 
     /**
-     * Verifies that a valid login request returns a successful response
-     * containing a JWT token and its metadata.
+     * Verifies that a valid login request returns expiration metadata and
+     * sets the JWT authentication cookie.
      *
      * @throws Exception if the mock HTTP request fails
      */
     @Test
-    @DisplayName("POST /auth/login should return JWT when credentials are valid")
-    void loginShouldReturnJwt() throws Exception {
+    @DisplayName("POST /auth/login should set authentication cookie when credentials are valid")
+    void loginShouldSetAuthenticationCookie() throws Exception {
 
         // Arrange
-        LoginRequestDTO request = new LoginRequestDTO("test@email.com", "password");
+        LoginRequestDTO request =
+                new LoginRequestDTO("test@email.com", "password");
 
         AuthResponseDTO response = new AuthResponseDTO(
                 "fake-jwt-token",
-                "Bearer",
                 1800000L
         );
 
-        when(authService.login(request)).thenReturn(response);
+        ResponseCookie cookie = ResponseCookie
+                .from("access_token", "fake-jwt-token")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofMillis(1800000L))
+                .build();
+
+        when(authService.login(request))
+                .thenReturn(response);
+
+        when(jwtCookieService.createAuthenticationCookie("fake-jwt-token"))
+                .thenReturn(cookie);
 
         // Act + Assert
         mockMvc.perform(post("/auth/login")
@@ -92,20 +116,24 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.accessToken").value("fake-jwt-token"))
-                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(header().string(
+                        HttpHeaders.SET_COOKIE,
+                        cookie.toString()
+                ))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.tokenType").doesNotExist())
                 .andExpect(jsonPath("$.expiresIn").value(1800000L));
     }
 
     /**
-     * Verifies that a valid registration request returns a successful response
-     * containing a JWT token and its metadata.
+     * Verifies that a valid registration request returns expiration metadata
+     * and sets the JWT authentication cookie.
      *
      * @throws Exception if the mock HTTP request fails
      */
     @Test
-    @DisplayName("POST /auth/register should return JWT when registration data is valid")
-    void registerShouldReturnJwt() throws Exception {
+    @DisplayName("POST /auth/register should set authentication cookie when registration data is valid")
+    void registerShouldSetAuthenticationCookie() throws Exception {
 
         // Arrange
         RegisterRequestDTO request = new RegisterRequestDTO(
@@ -118,11 +146,24 @@ class AuthControllerTest {
 
         AuthResponseDTO response = new AuthResponseDTO(
                 "fake-register-jwt-token",
-                "Bearer",
                 1800000L
         );
 
-        when(authService.register(request)).thenReturn(response);
+        ResponseCookie cookie = ResponseCookie
+                .from("access_token", "fake-register-jwt-token")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .path("/")
+                .maxAge(Duration.ofMillis(1800000L))
+                .build();
+
+        when(authService.register(request))
+                .thenReturn(response);
+
+        when(jwtCookieService.createAuthenticationCookie(
+                "fake-register-jwt-token"
+        )).thenReturn(cookie);
 
         // Act + Assert
         mockMvc.perform(post("/auth/register")
@@ -130,8 +171,12 @@ class AuthControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.accessToken").value("fake-register-jwt-token"))
-                .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(header().string(
+                        HttpHeaders.SET_COOKIE,
+                        cookie.toString()
+                ))
+                .andExpect(jsonPath("$.accessToken").doesNotExist())
+                .andExpect(jsonPath("$.tokenType").doesNotExist())
                 .andExpect(jsonPath("$.expiresIn").value(1800000L));
     }
 }
