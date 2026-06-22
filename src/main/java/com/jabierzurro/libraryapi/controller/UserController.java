@@ -5,12 +5,14 @@ import com.jabierzurro.libraryapi.dto.PatchUserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UpdateUserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UserRequestDTO;
 import com.jabierzurro.libraryapi.dto.UserResponseDTO;
+import com.jabierzurro.libraryapi.security.model.UserDetailsImpl;
 import com.jabierzurro.libraryapi.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -57,6 +59,22 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+    
+    /**
+     * Retrieves the currently authenticated user.
+     *
+     * @param principal authenticated user details
+     * @return the authenticated user as {@link UserResponseDTO}
+     */
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDTO> getCurrentUser(
+            @AuthenticationPrincipal UserDetailsImpl principal
+    ) {
+        return ResponseEntity.ok(
+                userService.getUserById(principal.getId())
+        );
     }
 
     /**
