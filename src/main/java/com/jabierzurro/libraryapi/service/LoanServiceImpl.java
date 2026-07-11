@@ -274,28 +274,28 @@ public class LoanServiceImpl implements LoanService {
         LocalDate previousDueDate = loan.getDueDate();
         LoanStatus previousStatus = loan.getStatus();
 
-        LocalDate newStartDate = request.getStartDate() != null
-                ? request.getStartDate()
-                : loan.getStartDate();
+        boolean datesAreBeingUpdated =
+                request.getStartDate() != null || request.getDueDate() != null;
 
-        LocalDate newDueDate = request.getDueDate() != null
-                ? request.getDueDate()
-                : loan.getDueDate();
+        if (datesAreBeingUpdated) {
+            LocalDate newStartDate = request.getStartDate() != null
+                    ? request.getStartDate()
+                    : loan.getStartDate();
 
-        validateLoanDates(newStartDate, newDueDate);
-        validateNoBookConflict(
-                loan,
-                loanRepository.findAll(),
-                newStartDate,
-                newDueDate
-        );
+            LocalDate newDueDate = request.getDueDate() != null
+                    ? request.getDueDate()
+                    : loan.getDueDate();
 
-        if (request.getStartDate() != null) {
-            loan.setStartDate(request.getStartDate());
-        }
+            validateLoanDates(newStartDate, newDueDate);
+            validateNoBookConflict(
+                    loan,
+                    loanRepository.findAll(),
+                    newStartDate,
+                    newDueDate
+            );
 
-        if (request.getDueDate() != null) {
-            loan.setDueDate(request.getDueDate());
+            loan.setStartDate(newStartDate);
+            loan.setDueDate(newDueDate);
         }
 
         updateLoanStatus(loan, request.getStatus());
