@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -40,6 +41,16 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 new CustomErrorResponse("Invalid request body. Check JSON format and date format. Dates must use yyyy-MM-dd."),
                 HttpStatus.BAD_REQUEST
+        );
+    }
+    
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<CustomErrorResponse> handleBadCredentials(
+            BadCredentialsException ex
+    ) {
+        return new ResponseEntity<>(
+                new CustomErrorResponse("Invalid email or password"),
+                HttpStatus.UNAUTHORIZED
         );
     }
     
