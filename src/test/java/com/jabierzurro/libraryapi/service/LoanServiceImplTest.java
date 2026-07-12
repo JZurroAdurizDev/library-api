@@ -36,13 +36,16 @@ import static org.mockito.Mockito.verify;
 /**
  * Unit test class for {@link LoanServiceImpl}.
  *
- * <p>This test suite verifies the business logic of loan creation in isolation,
+ * <p>
+ * This test suite verifies the business logic of loan creation in isolation,
  * using Mockito to mock repository dependencies.
  *
- * <p>The tests focus on validating core business rules and conflict scenarios,
+ * <p>
+ * The tests focus on validating core business rules and conflict scenarios,
  * ensuring that invalid operations correctly throw exceptions.
  *
- * <p>Each test follows the Arrange-Act-Assert pattern for clarity.
+ * <p>
+ * Each test follows the Arrange-Act-Assert pattern for clarity.
  *
  * @author Jabier Zurro Aduriz
  */
@@ -60,10 +63,10 @@ class LoanServiceImplTest {
 
     @InjectMocks
     private LoanServiceImpl loanService;
-    
+
     @Mock
     private LoanEventProducer loanEventProducer;
-    
+
     /**
      * Verifies that creating a loan fails when the user already has an active loan.
      *
@@ -72,31 +75,29 @@ class LoanServiceImplTest {
     @Test
     @DisplayName("Should throw exception when user has active loan")
     void shouldThrowExceptionWhenUserHasActiveLoan() {
-        
+
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1)
-        );
+                1,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1));
 
         User user = new User();
         user.setId(1);
 
         when(userRepository.findById(1)).thenReturn(Optional.of(user));
         when(loanRepository.existsByUser_IdAndStatus(1, LoanStatus.ACTIVE))
-            .thenReturn(true);
+                .thenReturn(true);
 
         // Act + Assert
         LoanConflictException ex = assertThrows(
-            LoanConflictException.class,
-            () -> loanService.create(request)
-        );
+                LoanConflictException.class,
+                () -> loanService.create(request));
 
         assertEquals("User with id 1 already has an active loan", ex.getMessage());
     }
-    
+
     /**
      * Verifies that creating a loan fails when more than five books are requested.
      *
@@ -108,21 +109,19 @@ class LoanServiceImplTest {
 
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1, 2, 3, 4, 5, 6)
-        );
+                1,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1, 2, 3, 4, 5, 6));
 
         // Act + Assert
         ConflictException ex = assertThrows(
-            ConflictException.class,
-            () -> loanService.create(request)
-        );
+                ConflictException.class,
+                () -> loanService.create(request));
 
         assertEquals("A loan cannot include more than 5 books", ex.getMessage());
     }
-    
+
     /**
      * Verifies that creating a loan fails when the provided dates are in the past.
      *
@@ -134,21 +133,19 @@ class LoanServiceImplTest {
 
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().minusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1)
-        );
+                1,
+                LocalDate.now().minusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1));
 
         // Act + Assert
         ConflictException ex = assertThrows(
-            ConflictException.class,
-            () -> loanService.create(request)
-        );
+                ConflictException.class,
+                () -> loanService.create(request));
 
         assertEquals("Dates cannot be in the past", ex.getMessage());
     }
-    
+
     /**
      * Verifies that creating a loan fails when the specified user does not exist.
      *
@@ -160,23 +157,22 @@ class LoanServiceImplTest {
 
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1)
-        );
+                1,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1));
 
         when(userRepository.findById(1)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThrows(
-            UserNotFoundException.class,
-            () -> loanService.create(request)
-        );
+                UserNotFoundException.class,
+                () -> loanService.create(request));
     }
-    
+
     /**
-     * Verifies that creating a loan fails when one or more requested books do not exist.
+     * Verifies that creating a loan fails when one or more requested books do not
+     * exist.
      *
      * @throws NotFoundException if any book is not found
      */
@@ -186,11 +182,10 @@ class LoanServiceImplTest {
 
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1, 2)
-        );
+                1,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1, 2));
 
         User user = new User();
         user.setId(1);
@@ -201,13 +196,13 @@ class LoanServiceImplTest {
 
         // Act + Assert
         assertThrows(
-            NotFoundException.class,
-            () -> loanService.create(request)
-        );
+                NotFoundException.class,
+                () -> loanService.create(request));
     }
-    
+
     /**
-     * Verifies that creating a loan fails when one or more books are already loaned.
+     * Verifies that creating a loan fails when one or more books are already
+     * loaned.
      *
      * @throws LoanConflictException if any book is already part of an active loan
      */
@@ -217,11 +212,10 @@ class LoanServiceImplTest {
 
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1)
-        );
+                1,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1));
 
         User user = new User();
         user.setId(1);
@@ -230,20 +224,20 @@ class LoanServiceImplTest {
         when(loanRepository.existsByUser_IdAndStatus(1, LoanStatus.ACTIVE)).thenReturn(false);
         when(bookRepository.findAllById(request.getBookIds())).thenReturn(List.of(new Book()));
         when(loanRepository.existsByStatusAndBooks_IdIn(LoanStatus.ACTIVE, request.getBookIds()))
-            .thenReturn(true);
+                .thenReturn(true);
 
         // Act + Assert
         assertThrows(
-            LoanConflictException.class,
-            () -> loanService.create(request)
-        );
+                LoanConflictException.class,
+                () -> loanService.create(request));
     }
-    
+
     /**
      * Verifies that creating a valid loan publishes a {@link LoanCreatedEvent}
      * through the Kafka producer.
      *
-     * <p>The repository save operation is mocked to simulate the identifier
+     * <p>
+     * The repository save operation is mocked to simulate the identifier
      * generated by the database.
      */
     @Test
@@ -252,11 +246,10 @@ class LoanServiceImplTest {
 
         // Arrange
         LoanRequestDTO request = new LoanRequestDTO(
-            1,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            List.of(1)
-        );
+                1,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                List.of(1));
 
         User user = new User();
         user.setId(1);
@@ -270,9 +263,9 @@ class LoanServiceImplTest {
         when(loanRepository.existsByUser_IdAndStatus(1, LoanStatus.ACTIVE)).thenReturn(false);
         when(bookRepository.findAllById(request.getBookIds())).thenReturn(List.of(book));
         when(loanRepository.existsByStatusAndBooks_IdIn(LoanStatus.ACTIVE, request.getBookIds()))
-            .thenReturn(false);
+                .thenReturn(false);
 
-       when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
+        when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> {
             Loan loan = invocation.getArgument(0, Loan.class);
             loan.setId(10);
             return loan;
@@ -284,7 +277,7 @@ class LoanServiceImplTest {
         // Assert
         verify(loanEventProducer).publishLoanEvent(any(Integer.class), any(LoanCreatedEvent.class));
     }
-    
+
     @Test
     @DisplayName("Should publish loan updated event when loan dates are patched")
     void shouldPublishLoanUpdatedEventWhenLoanDatesArePatched() {
@@ -295,18 +288,16 @@ class LoanServiceImplTest {
         user.setEmail("user@test.com");
 
         Loan loan = new Loan(
-            user,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            LoanStatus.ACTIVE
-        );
+                user,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                LoanStatus.ACTIVE);
         loan.setId(10);
 
         PatchLoanRequestDTO request = new PatchLoanRequestDTO(
-            LocalDate.now().plusDays(2),
-            LocalDate.now().plusDays(6),
-            null
-        );
+                LocalDate.now().plusDays(2),
+                LocalDate.now().plusDays(6),
+                null);
 
         when(loanRepository.findById(10)).thenReturn(Optional.of(loan));
         when(loanRepository.findAll()).thenReturn(List.of(loan));
@@ -319,7 +310,7 @@ class LoanServiceImplTest {
         verify(loanEventProducer).publishLoanEvent(any(Integer.class), any(LoanUpdatedEvent.class));
         verify(loanEventProducer, never()).publishLoanEvent(any(Integer.class), any(LoanClosedEvent.class));
     }
-    
+
     @Test
     @DisplayName("Should publish loan closed event when loan status is patched to closed")
     void shouldPublishLoanClosedEventWhenLoanStatusIsPatchedToClosed() {
@@ -330,28 +321,29 @@ class LoanServiceImplTest {
         user.setEmail("user@test.com");
 
         Loan loan = new Loan(
-            user,
-            LocalDate.now().plusDays(1),
-            LocalDate.now().plusDays(5),
-            LoanStatus.ACTIVE
-        );
+                user,
+                LocalDate.now().plusDays(1),
+                LocalDate.now().plusDays(5),
+                LoanStatus.ACTIVE);
         loan.setId(10);
 
         PatchLoanRequestDTO request = new PatchLoanRequestDTO(
-            null,
-            null,
-            LoanStatus.CLOSED
-        );
+                null,
+                null,
+                LoanStatus.CLOSED);
 
         when(loanRepository.findById(10)).thenReturn(Optional.of(loan));
-        when(loanRepository.findAll()).thenReturn(List.of(loan));
-        when(loanRepository.save(any(Loan.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(loanRepository.save(any(Loan.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         loanService.patch(10, request);
 
         // Assert
-        verify(loanEventProducer).publishLoanEvent(any(Integer.class), any(LoanClosedEvent.class));
-        verify(loanEventProducer, never()).publishLoanEvent(any(Integer.class), any(LoanUpdatedEvent.class));
+        verify(loanEventProducer)
+                .publishLoanEvent(any(Integer.class), any(LoanClosedEvent.class));
+
+        verify(loanEventProducer, never())
+                .publishLoanEvent(any(Integer.class), any(LoanUpdatedEvent.class));
     }
 }
