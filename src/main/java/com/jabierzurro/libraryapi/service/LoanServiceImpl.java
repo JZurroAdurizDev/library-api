@@ -74,17 +74,14 @@ public class LoanServiceImpl implements LoanService {
     /**
      * Retrieves all loans.
      *
-     * @return list of loans as {@link LoanResponseDTO}
-     * @throws NotFoundException if no loans exist
+     * @return list of loans as {@link LoanResponseDTO};
+     *         an empty list if no loans exist
      */
     @Override
     @Transactional(readOnly = true)
     public List<LoanResponseDTO> getAllLoans() {
-        List<Loan> loans = this.loanRepository.findAll();
-        if (loans.isEmpty()) {
-            throw new NotFoundException("No loans found in the database.") {};
-        }
-        return loans.stream()
+        return this.loanRepository.findAll()
+                .stream()
                 .map(LoanServiceImpl::toResponseDTO)
                 .toList();
     }

@@ -1,6 +1,7 @@
 package com.jabierzurro.libraryapi.service;
 
 import com.jabierzurro.libraryapi.dto.LoanRequestDTO;
+import com.jabierzurro.libraryapi.dto.LoanResponseDTO;
 import com.jabierzurro.libraryapi.dto.PatchLoanRequestDTO;
 import com.jabierzurro.libraryapi.entity.Book;
 import com.jabierzurro.libraryapi.entity.Loan;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -345,5 +347,20 @@ class LoanServiceImplTest {
 
         verify(loanEventProducer, never())
                 .publishLoanEvent(any(Integer.class), any(LoanUpdatedEvent.class));
+    }
+    
+    @Test
+    @DisplayName("Should return empty list when no loans exist")
+    void shouldReturnEmptyListWhenNoLoansExist() {
+
+        // Arrange
+        when(loanRepository.findAll()).thenReturn(List.of());
+
+        // Act
+        List<LoanResponseDTO> result = loanService.getAllLoans();
+
+        // Assert
+        assertTrue(result.isEmpty());
+        verify(loanRepository).findAll();
     }
 }
