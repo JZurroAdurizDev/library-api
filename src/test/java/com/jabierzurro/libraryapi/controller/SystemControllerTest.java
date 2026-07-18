@@ -1,5 +1,6 @@
 package com.jabierzurro.libraryapi.controller;
 
+import com.jabierzurro.libraryapi.security.service.JwtCookieService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +33,12 @@ class SystemControllerTest {
      */
     @MockitoBean
     private JwtService jwtService;
+    
+    /**
+     * Mocked JWT cookie service required for application context initialization.
+     */
+    @MockitoBean
+    private JwtCookieService jwtCookieService;
 
     /**
      * Mocked user details service required by the application context.
