@@ -22,15 +22,18 @@ jobs:
     services:
       mysql:
         image: mysql:8.4
+
         env:
           MYSQL_DATABASE: library_db
           MYSQL_USER: ${{ vars.DB_USER }}
           MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD }}
           MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
+
         ports:
           - 3306:3306
+
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -p${{ secrets.MYSQL_ROOT_PASSWORD }}"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -p\$MYSQL_ROOT_PASSWORD"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
