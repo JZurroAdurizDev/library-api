@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jabierzurro.libraryapi.dto.BookRequestDTO;
 import com.jabierzurro.libraryapi.dto.BookResponseDTO;
 import com.jabierzurro.libraryapi.dto.PatchBookRequestDTO;
+import com.jabierzurro.libraryapi.security.service.JwtCookieService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import com.jabierzurro.libraryapi.service.BookService;
@@ -68,6 +69,12 @@ public class BookControllerTest {
      */
     @MockitoBean
     private JwtService jwtService;
+    
+    /**
+     * Mocked JWT cookie service required for application context initialization.
+     */
+    @MockitoBean
+    private JwtCookieService jwtCookieService;
 
     /**
      * Mocked user details service required for application context initialization.

@@ -8,6 +8,7 @@ import com.jabierzurro.libraryapi.dto.PatchLoanRequestDTO;
 import com.jabierzurro.libraryapi.dto.UpdateLoanRequestDTO;
 import com.jabierzurro.libraryapi.entity.LoanStatus;
 import com.jabierzurro.libraryapi.security.authorization.LoanSecurity;
+import com.jabierzurro.libraryapi.security.service.JwtCookieService;
 import com.jabierzurro.libraryapi.security.service.UserDetailsServiceImpl;
 import com.jabierzurro.libraryapi.security.util.JwtService;
 import com.jabierzurro.libraryapi.service.LoanService;
@@ -72,6 +73,12 @@ public class LoanControllerTest {
      */
     @MockitoBean
     private JwtService jwtService;
+    
+    /**
+     * Mocked JWT cookie service required for application context initialization.
+     */
+    @MockitoBean
+    private JwtCookieService jwtCookieService;
 
     /**
      * Mocked user details service required for application context initialization.
